@@ -20,6 +20,8 @@ PAGE_SIZE = 250
 DEFAULT_MAX_PER_MARKET = 750
 DEFAULT_SLEEP_SECONDS = 0.5
 DEFAULT_PERIODS = 5
+DEFAULT_SCREEN_RETRIES = 3
+DEFAULT_SCREEN_RETRY_SLEEP_SECONDS = 3.0
 US_EXCHANGES = ("NMS", "NYQ", "ASE")
 CN_EXCHANGES = ("SHH", "SHZ")
 
@@ -180,6 +182,23 @@ def include_symbol(market: str, symbol: str, exchange: str | None) -> bool:
     return False
 
 
+def screen_with_retries(query: EquityQuery, *, offset: int) -> tuple[dict[str, Any] | None, str | None]:
+    last_warning = None
+    for attempt in range(1, DEFAULT_SCREEN_RETRIES + 1):
+        try:
+            result = yf.screen(query, offset=offset, size=PAGE_SIZE, sortField="intradaymarketcap", sortAsc=False)
+        except Exception as exc:
+            last_warning = (
+                f"screen offset {offset} attempt {attempt}/{DEFAULT_SCREEN_RETRIES}: "
+                f"{type(exc).__name__}"
+            )
+            if attempt < DEFAULT_SCREEN_RETRIES:
+                time.sleep(DEFAULT_SCREEN_RETRY_SLEEP_SECONDS)
+            continue
+        return result, None
+    return None, last_warning
+
+
 def collect_industry_quotes(
     *,
     market: str,
@@ -190,6 +209,7 @@ def collect_industry_quotes(
     query_industry = industry_record.get("industry_query") or industry
     query = market_industry_query(market, query_industry)
     records: list[dict[str, Any]] = []
+    warnings: list[str] = []
 
     def add_quotes(quotes: list[dict[str, Any]]) -> None:
         for item in quotes:
@@ -216,14 +236,32 @@ def collect_industry_quotes(
                 record[field] = item.get(field)
             records.append(record)
 
-    first = yf.screen(query, offset=0, size=PAGE_SIZE, sortField="intradaymarketcap", sortAsc=False)
+    first, warning = screen_with_retries(query, offset=0)
+    if warning:
+        warnings.append(f"{market} {industry}: {warning}")
+    if first is None:
+        return records, {
+            "market": market,
+            "sector": industry_record["sector"],
+            "industry": industry,
+            "industry_query": query_industry,
+            "reported_total": 0,
+            "accepted": 0,
+            "requested_offsets": [0],
+            "sample_policy": "complete" if complete else "industry_top_market_cap_page",
+            "warnings": warnings,
+        }
     total = int(first.get("total") or 0)
     add_quotes(first.get("quotes") or [])
     offsets: list[int] = []
     if complete and total > PAGE_SIZE:
         offsets = list(range(PAGE_SIZE, total, PAGE_SIZE))
         for offset in offsets:
-            result = yf.screen(query, offset=offset, size=PAGE_SIZE, sortField="intradaymarketcap", sortAsc=False)
+            result, warning = screen_with_retries(query, offset=offset)
+            if warning:
+                warnings.append(f"{market} {industry}: {warning}")
+            if result is None:
+                break
             quotes = result.get("quotes") or []
             if not quotes:
                 break
@@ -237,6 +275,7 @@ def collect_industry_quotes(
         "accepted": len(records),
         "requested_offsets": [0, *offsets],
         "sample_policy": "complete" if complete else "industry_top_market_cap_page",
+        "warnings": warnings,
     }
 
 
@@ -248,6 +287,7 @@ def collect_universe(
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     records_by_symbol: dict[str, dict[str, Any]] = {}
     industry_stats: list[dict[str, Any]] = []
+    warnings: list[str] = []
     complete = max_symbols is None
     for industry_record in industry_catalog:
         industry_records, stats = collect_industry_quotes(
@@ -256,6 +296,7 @@ def collect_universe(
             complete=complete,
         )
         industry_stats.append(stats)
+        warnings.extend(stats.get("warnings") or [])
         for record in industry_records:
             symbol = record["symbol"]
             existing = records_by_symbol.get(symbol)
@@ -281,6 +322,7 @@ def collect_universe(
         "queried_industries": len(industry_catalog),
         "industry_stats": industry_stats,
         "sample_policy": "complete_by_industry" if complete else "largest_market_cap_sample_from_industry_top_pages",
+        "warnings": warnings,
     }
 
 
@@ -421,6 +463,7 @@ def build_panel(
 
     universe: list[dict[str, Any]] = []
     universe_stats = []
+    universe_warnings: list[str] = []
     for market in markets:
         records, stats = collect_universe(
             market,
@@ -429,10 +472,11 @@ def build_panel(
         )
         universe.extend(records)
         universe_stats.append(stats)
+        universe_warnings.extend(stats.get("warnings") or [])
 
     records: list[dict[str, Any]] = []
     valuation_rows: list[dict[str, Any]] = []
-    warnings: list[str] = []
+    warnings: list[str] = [*universe_warnings]
     for index, record in enumerate(universe):
         valuation, rows, ticker_warnings = fetch_ticker_valuation(
             record,
