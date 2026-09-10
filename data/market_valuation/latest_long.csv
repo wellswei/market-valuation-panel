@@ -1,0 +1,160 @@
+date,market,exchange,symbol,name,sector,industry,currency,financialCurrency,period_label,period_end,measure,metric,value
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,Current,,Market Cap,marketCap,5400959500000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2026,2026-07-31,Market Cap,marketCap,4847510200000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,4/30/2026,2026-04-30,Market Cap,marketCap,4833690200000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,1/31/2026,2026-01-31,Market Cap,marketCap,4645223500000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,10/31/2025,2025-10-31,Market Cap,marketCap,4921519400000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2025,2025-07-31,Market Cap,marketCap,4337814800000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,Current,,Enterprise Value,enterpriseValue,5376841500000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2026,2026-07-31,Enterprise Value,enterpriseValue,4779286200000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,4/30/2026,2026-04-30,Enterprise Value,enterpriseValue,4782174200000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,1/31/2026,2026-01-31,Enterprise Value,enterpriseValue,4595096500000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,10/31/2025,2025-10-31,Enterprise Value,enterpriseValue,4878126400000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2025,2025-07-31,Enterprise Value,enterpriseValue,4288194900000.0
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,Current,,Trailing P/E,trailingPE,28.276865
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2026,2026-07-31,Trailing P/E,trailingPE,30.742726
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,4/30/2026,2026-04-30,Trailing P/E,trailingPE,40.728571
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,1/31/2026,2026-01-31,Trailing P/E,trailingPE,47.309406
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,10/31/2025,2025-10-31,Trailing P/E,trailingPE,57.689459
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2025,2025-07-31,Trailing P/E,trailingPE,57.377419
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,Current,,Forward P/E,forwardPE,24.6305
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2026,2026-07-31,Forward P/E,forwardPE,22.8833
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,4/30/2026,2026-04-30,Forward P/E,forwardPE,24.57
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,1/31/2026,2026-01-31,Forward P/E,forwardPE,24.9377
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,10/31/2025,2025-10-31,Forward P/E,forwardPE,31.5457
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2025,2025-07-31,Forward P/E,forwardPE,39.8406
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,Current,,PEG Ratio (5yr expected),pegRatio5y,0.5682
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2026,2026-07-31,PEG Ratio (5yr expected),pegRatio5y,0.5529
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,4/30/2026,2026-04-30,PEG Ratio (5yr expected),pegRatio5y,0.6334
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,1/31/2026,2026-01-31,PEG Ratio (5yr expected),pegRatio5y,0.7215
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,10/31/2025,2025-10-31,PEG Ratio (5yr expected),pegRatio5y,0.9155
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2025,2025-07-31,PEG Ratio (5yr expected),pegRatio5y,1.7245
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,Current,,Price/Sales,priceToSales,18.011647
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2026,2026-07-31,Price/Sales,priceToSales,19.370093
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,4/30/2026,2026-04-30,Price/Sales,priceToSales,22.65585
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,1/31/2026,2026-01-31,Price/Sales,priceToSales,25.106609
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,10/31/2025,2025-10-31,Price/Sales,priceToSales,30.216992
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2025,2025-07-31,Price/Sales,priceToSales,29.623143
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,Current,,Price/Book,priceToBook,23.586624
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2026,2026-07-31,Price/Book,priceToBook,24.798747
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,4/30/2026,2026-04-30,Price/Book,priceToBook,30.730485
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,1/31/2026,2026-01-31,Price/Book,priceToBook,39.069308
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,10/31/2025,2025-10-31,Price/Book,priceToBook,49.150807
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2025,2025-07-31,Price/Book,priceToBook,51.651311
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,Current,,Enterprise Value/Revenue,enterpriseToRevenue,17.7471
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2026,2026-07-31,Enterprise Value/Revenue,enterpriseToRevenue,18.8539
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,4/30/2026,2026-04-30,Enterprise Value/Revenue,enterpriseToRevenue,22.1461
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,1/31/2026,2026-01-31,Enterprise Value/Revenue,enterpriseToRevenue,24.5541
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,10/31/2025,2025-10-31,Enterprise Value/Revenue,enterpriseToRevenue,29.5254
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2025,2025-07-31,Enterprise Value/Revenue,enterpriseToRevenue,28.9224
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,Current,,Enterprise Value/EBITDA,enterpriseToEbitda,22.9884
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2026,2026-07-31,Enterprise Value/EBITDA,enterpriseToEbitda,24.767
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,4/30/2026,2026-04-30,Enterprise Value/EBITDA,enterpriseToEbitda,33.0827
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,1/31/2026,2026-01-31,Enterprise Value/EBITDA,enterpriseToEbitda,38.5851
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,10/31/2025,2025-10-31,Enterprise Value/EBITDA,enterpriseToEbitda,47.27
+2026-09-10,US,NMS,NVDA,NVIDIA Corporation,Technology,Semiconductors,USD,USD,7/31/2025,2025-07-31,Enterprise Value/EBITDA,enterpriseToEbitda,47.1396
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,Current,,Market Cap,marketCap,4602128700000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2026,2026-06-30,Market Cap,marketCap,4249933300000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,3/31/2026,2026-03-31,Market Cap,marketCap,3722512500000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,12/31/2025,2025-12-31,Market Cap,marketCap,3997076800000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,9/30/2025,2025-09-30,Market Cap,marketCap,3761715200000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2025,2025-06-30,Market Cap,marketCap,3048153700000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,Current,,Enterprise Value,enterpriseValue,4624073700000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2026,2026-06-30,Enterprise Value,enterpriseValue,4266137300000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,3/31/2026,2026-03-31,Enterprise Value,enterpriseValue,3746114500000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,12/31/2025,2025-12-31,Enterprise Value,enterpriseValue,4041036800000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,9/30/2025,2025-09-30,Enterprise Value,enterpriseValue,3808041200000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2025,2025-06-30,Enterprise Value,enterpriseValue,3097841700000.0
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,Current,,Trailing P/E,trailingPE,36.162844
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2026,2026-06-30,Trailing P/E,trailingPE,35.031477
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,3/31/2026,2026-03-31,Trailing P/E,trailingPE,32.125316
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,12/31/2025,2025-12-31,Trailing P/E,trailingPE,36.442359
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,9/30/2025,2025-09-30,Trailing P/E,trailingPE,38.638847
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2025,2025-06-30,Trailing P/E,trailingPE,31.957944
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,Current,,Forward P/E,forwardPE,32.2581
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2026,2026-06-30,Forward P/E,forwardPE,30.3951
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,3/31/2026,2026-03-31,Forward P/E,forwardPE,29.4985
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,12/31/2025,2025-12-31,Forward P/E,forwardPE,32.7869
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,9/30/2025,2025-09-30,Forward P/E,forwardPE,31.6456
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2025,2025-06-30,Forward P/E,forwardPE,25.7069
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,Current,,PEG Ratio (5yr expected),pegRatio5y,2.4777
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2026,2026-06-30,PEG Ratio (5yr expected),pegRatio5y,2.3381
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,3/31/2026,2026-03-31,PEG Ratio (5yr expected),pegRatio5y,2.2544
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,12/31/2025,2025-12-31,PEG Ratio (5yr expected),pegRatio5y,2.7512
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,9/30/2025,2025-09-30,PEG Ratio (5yr expected),pegRatio5y,2.4377
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2025,2025-06-30,PEG Ratio (5yr expected),pegRatio5y,1.871
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,Current,,Price/Sales,priceToSales,9.982998
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2026,2026-06-30,Price/Sales,priceToSales,9.51005
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,3/31/2026,2026-03-31,Price/Sales,priceToSales,8.692125
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,12/31/2025,2025-12-31,Price/Sales,priceToSales,9.80192
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,9/30/2025,2025-09-30,Price/Sales,priceToSales,9.409086
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2025,2025-06-30,Price/Sales,priceToSales,7.78908
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,Current,,Price/Book,priceToBook,42.802536
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2026,2026-06-30,Price/Book,priceToBook,39.90885
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,3/31/2026,2026-03-31,Price/Book,priceToBook,42.210143
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,12/31/2025,2025-12-31,Price/Book,priceToBook,54.210148
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,9/30/2025,2025-09-30,Price/Book,priceToBook,57.142871
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2025,2025-06-30,Price/Book,priceToBook,45.633775
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,Current,,Enterprise Value/Revenue,enterpriseToRevenue,9.9054
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2026,2026-06-30,Enterprise Value/Revenue,enterpriseToRevenue,9.45
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,3/31/2026,2026-03-31,Enterprise Value/Revenue,enterpriseToRevenue,8.5996
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,12/31/2025,2025-12-31,Enterprise Value/Revenue,enterpriseToRevenue,9.7103
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,9/30/2025,2025-09-30,Enterprise Value/Revenue,enterpriseToRevenue,9.3192
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2025,2025-06-30,Enterprise Value/Revenue,enterpriseToRevenue,7.7375
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,Current,,Enterprise Value/EBITDA,enterpriseToEbitda,27.531
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2026,2026-06-30,Enterprise Value/EBITDA,enterpriseToEbitda,26.6674
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,3/31/2026,2026-03-31,Enterprise Value/EBITDA,enterpriseToEbitda,24.5001
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,12/31/2025,2025-12-31,Enterprise Value/EBITDA,enterpriseToEbitda,27.9177
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,9/30/2025,2025-09-30,Enterprise Value/EBITDA,enterpriseToEbitda,26.8747
+2026-09-10,US,NMS,AAPL,Apple Inc.,Technology,Consumer Electronics,USD,USD,6/30/2025,2025-06-30,Enterprise Value/EBITDA,enterpriseToEbitda,22.3081
+2026-09-10,CN,SHH,688825.SS,CXMT CORPORATION,Technology,Semiconductors,CNY,CNY,Current,,Market Cap,marketCap,3860568700000.0
+2026-09-10,CN,SHH,688825.SS,CXMT CORPORATION,Technology,Semiconductors,CNY,CNY,Current,,Enterprise Value,enterpriseValue,3818861800000.0
+2026-09-10,CN,SHH,688825.SS,CXMT CORPORATION,Technology,Semiconductors,CNY,CNY,Current,,Trailing P/E,trailingPE,41.724138
+2026-09-10,CN,SHH,688825.SS,CXMT CORPORATION,Technology,Semiconductors,CNY,CNY,Current,,Forward P/E,forwardPE,10.5708
+2026-09-10,CN,SHH,688825.SS,CXMT CORPORATION,Technology,Semiconductors,CNY,CNY,Current,,PEG Ratio (5yr expected),pegRatio5y,0.0979
+2026-09-10,CN,SHH,688825.SS,CXMT CORPORATION,Technology,Semiconductors,CNY,CNY,Current,,Price/Sales,priceToSales,17.200011
+2026-09-10,CN,SHH,688825.SS,CXMT CORPORATION,Technology,Semiconductors,CNY,CNY,Current,,Price/Book,priceToBook,28.655869
+2026-09-10,CN,SHH,688825.SS,CXMT CORPORATION,Technology,Semiconductors,CNY,CNY,Current,,Enterprise Value/Revenue,enterpriseToRevenue,19.4175
+2026-09-10,CN,SHH,688825.SS,CXMT CORPORATION,Technology,Semiconductors,CNY,CNY,Current,,Enterprise Value/EBITDA,enterpriseToEbitda,23.7449
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,Current,,Market Cap,marketCap,2717522300000.0
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2026,2026-06-30,Market Cap,marketCap,2390011000000.0
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2026,2026-03-31,Market Cap,marketCap,2585056600000.0
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,12/31/2025,2025-12-31,Market Cap,marketCap,2625000500000.0
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2025,2025-06-30,Market Cap,marketCap,2539675400000.0
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2025,2025-03-31,Market Cap,marketCap,2306632900000.0
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,Current,,Trailing P/E,trailingPE,7.920792
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2026,2026-06-30,Trailing P/E,trailingPE,7.0
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2026,2026-03-31,Trailing P/E,trailingPE,7.64
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,12/31/2025,2025-12-31,Trailing P/E,trailingPE,8.010101
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2025,2025-06-30,Trailing P/E,trailingPE,7.824742
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2025,2025-03-31,Trailing P/E,trailingPE,7.030612
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,Current,,Forward P/E,forwardPE,7.3368
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2026,2026-06-30,Forward P/E,forwardPE,6.93
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2026,2026-03-31,Forward P/E,forwardPE,7.4963
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,12/31/2025,2025-12-31,Forward P/E,forwardPE,7.8493
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2025,2025-06-30,Forward P/E,forwardPE,7.5873
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2025,2025-03-31,Forward P/E,forwardPE,6.8213
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,Current,,PEG Ratio (5yr expected),pegRatio5y,1.3592
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2026,2026-06-30,PEG Ratio (5yr expected),pegRatio5y,1.2836
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2026,2026-03-31,PEG Ratio (5yr expected),pegRatio5y,3.4861
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,12/31/2025,2025-12-31,PEG Ratio (5yr expected),pegRatio5y,3.6519
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2025,2025-06-30,PEG Ratio (5yr expected),pegRatio5y,3.45
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2025,2025-03-31,PEG Ratio (5yr expected),pegRatio5y,2.7844
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,Current,,Price/Sales,priceToSales,3.398894
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2026,2026-06-30,Price/Sales,priceToSales,3.055211
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2026,2026-03-31,Price/Sales,priceToSales,3.378317
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,12/31/2025,2025-12-31,Price/Sales,priceToSales,3.538585
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2025,2025-06-30,Price/Sales,priceToSales,3.500785
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2025,2025-03-31,Price/Sales,priceToSales,3.147304
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,Current,,Price/Book,priceToBook,0.676924
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2026,2026-06-30,Price/Book,priceToBook,0.598175
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2026,2026-03-31,Price/Book,priceToBook,0.659415
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,12/31/2025,2025-12-31,Price/Book,priceToBook,0.69725
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2025,2025-06-30,Price/Book,priceToBook,0.693335
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2025,2025-03-31,Price/Book,priceToBook,0.640285
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,Current,,Enterprise Value/Revenue,enterpriseToRevenue,5.6435
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2026,2026-06-30,Enterprise Value/Revenue,enterpriseToRevenue,4.8381
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2026,2026-03-31,Enterprise Value/Revenue,enterpriseToRevenue,5.9036
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,12/31/2025,2025-12-31,Enterprise Value/Revenue,enterpriseToRevenue,6.0363
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,6/30/2025,2025-06-30,Enterprise Value/Revenue,enterpriseToRevenue,5.2032
+2026-09-10,CN,SHH,601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,Financial Services,Banks - Diversified,CNY,CNY,3/31/2025,2025-03-31,Enterprise Value/Revenue,enterpriseToRevenue,4.6865

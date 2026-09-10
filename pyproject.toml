@@ -1,0 +1,16 @@
+[project]
+name = "market-valuation-panel"
+version = "0.1.0"
+description = "Build daily Yahoo Finance valuation panels by market, sector, industry, ticker, and period."
+requires-python = ">=3.11"
+dependencies = [
+  "yfinance>=0.2.65",
+]
+
+[project.scripts]
+market-valuation-panel = "market_valuation_panel.cli:main"
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
