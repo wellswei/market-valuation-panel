@@ -1,21 +1,17 @@
 # Market Valuation Panel
 
-Daily Yahoo Finance valuation panel for US and China equities.
+Daily GitHub-maintained Yahoo Finance valuation dataset for US and China equities.
 
 ## What It Does
 
 1. Discovers Yahoo's current sector and industry taxonomy with `yfinance.Sector`.
 2. Uses `yfinance.EquityQuery` to find US and China tickers by market and industry.
 3. Fetches `Ticker.get_valuation_measures(freq="quarterly", periods=5)` once per ticker.
-4. Writes:
-   - `data/market_valuation/latest.json`
-   - `data/market_valuation/latest_wide.csv`
-   - `data/market_valuation/latest_long.csv`
-   - `data/market_valuation/daily/<YYYY-MM-DD>.json`
-   - `data/market_valuation/daily/<YYYY-MM-DD>_wide.csv`
-   - `data/market_valuation/daily/<YYYY-MM-DD>_long.csv`
+4. Maintains one table:
+   - `data/market_valuation/dataset.csv`
 
-The wide table has one row per ticker per refresh date. Valuation columns use:
+The dataset has one row per refresh date and ticker. Valuation measures are expanded
+into stable columns:
 
 ```text
 <metric>_current
@@ -23,6 +19,9 @@ The wide table has one row per ticker per refresh date. Valuation columns use:
 ```
 
 `q1_period_end ... q5_period_end` preserve each issuer's fiscal-period dates.
+
+Reruns replace rows for the same `date` before writing, so a manual retry does not
+duplicate that day's snapshot.
 
 ## Local Run
 
@@ -39,15 +38,29 @@ Use full coverage intentionally:
 market-valuation-panel refresh --max-per-market 0 --sleep-seconds 0.5
 ```
 
+## Data Source
+
+This project uses Yahoo Finance data through `yfinance`. It is not affiliated with,
+endorsed by, or sponsored by Yahoo. Data availability, fields, classifications, and
+rate limits may change upstream.
+
 ## Data Policy
 
 - `records` stores ticker classification and screener metadata.
-- `valuation_measures.long` stores provider valuation data in long form.
-- `valuation_measures.wide` stores one-row-per-ticker data for daily analysis.
+- `dataset.records` stores the rows written into `dataset.csv`.
 - `Current` is Yahoo's provider trailing time-series value, not a same-close recomputation.
 - Sector and industry are Yahoo provider classifications at refresh time, not permanent taxonomy.
+- This dataset is for research and tooling; it is not investment advice.
 
 ## GitHub Actions
 
-`.github/workflows/daily-market-valuation.yml` runs daily and commits updated data files back to the repository. The default sample size is controlled by `MAX_PER_MARKET` in the workflow.
+`.github/workflows/daily-market-valuation.yml` refreshes daily at 18:00 New York time
+and commits `data/market_valuation/dataset.csv` back to the repository. GitHub cron
+runs in UTC, so the workflow wakes at both 22:00 and 23:00 UTC and only proceeds when
+`America/New_York` is actually 18:00. Manual runs are also supported.
 
+The default sample size is controlled by `MAX_PER_MARKET` in the workflow.
+
+## License
+
+MIT

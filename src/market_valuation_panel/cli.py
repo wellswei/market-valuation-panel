@@ -27,8 +27,8 @@ def command_refresh(args: argparse.Namespace) -> None:
         "date": payload["date"],
         "provider_version": payload["provider_version"],
         "records": len(payload["records"]),
-        "long_rows": len(payload["valuation_measures"]["long"]["records"]),
-        "wide_rows": len(payload["valuation_measures"]["wide"]["records"]),
+        "dataset_rows": len(payload["dataset"]["records"]),
+        "raw_valuation_rows": payload["raw_valuation_rows"],
         "industry_count": payload["classification"]["industry_count"],
         "universe": {
             "accepted_symbols": payload["universe"]["accepted_symbols"],
@@ -44,12 +44,7 @@ def command_refresh(args: argparse.Namespace) -> None:
             ],
         },
         "outputs": {
-            "latest_json": str(paths.latest_json),
-            "latest_wide_csv": str(paths.latest_wide_csv),
-            "latest_long_csv": str(paths.latest_long_csv),
-            "daily_json": str(paths.daily_json),
-            "daily_wide_csv": str(paths.daily_wide_csv),
-            "daily_long_csv": str(paths.daily_long_csv),
+            "dataset_csv": str(paths.dataset_csv),
         },
         "warning_count": payload["warning_count"],
     }, ensure_ascii=False, indent=2))
@@ -88,7 +83,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--output-dir",
         type=Path,
         default=Path("data/market_valuation"),
-        help="Output directory for latest and daily artifacts.",
+        help="Output directory for the maintained dataset.csv table.",
     )
     refresh.set_defaults(
         handler=lambda args: (
@@ -105,4 +100,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

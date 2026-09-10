@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import csv
-import json
 import math
 import re
-import statistics
 import time
 from collections import defaultdict
 from dataclasses import dataclass
@@ -22,7 +20,6 @@ PAGE_SIZE = 250
 DEFAULT_MAX_PER_MARKET = 750
 DEFAULT_SLEEP_SECONDS = 0.5
 DEFAULT_PERIODS = 5
-MIN_USABLE_METRIC_COUNT = 10
 US_EXCHANGES = ("NMS", "NYQ", "ASE")
 CN_EXCHANGES = ("SHH", "SHZ")
 
@@ -37,23 +34,6 @@ VALUATION_MEASURE_TO_METRIC = {
     "Enterprise Value/Revenue": "enterpriseToRevenue",
     "Enterprise Value/EBITDA": "enterpriseToEbitda",
 }
-
-VALUATION_MEASURE_COLUMNS = (
-    "date",
-    "market",
-    "exchange",
-    "symbol",
-    "name",
-    "sector",
-    "industry",
-    "currency",
-    "financialCurrency",
-    "period_label",
-    "period_end",
-    "measure",
-    "metric",
-    "value",
-)
 
 SCREENER_AUX_FIELDS = (
     "fullExchangeName",
@@ -76,7 +56,7 @@ SCREENER_AUX_FIELDS = (
     "averageAnalystRating",
 )
 
-WIDE_BASE_COLUMNS = (
+DATASET_BASE_COLUMNS = (
     "date",
     "market",
     "exchange",
@@ -92,12 +72,7 @@ WIDE_BASE_COLUMNS = (
 
 @dataclass(frozen=True)
 class OutputPaths:
-    latest_json: Path
-    latest_wide_csv: Path
-    latest_long_csv: Path
-    daily_json: Path
-    daily_wide_csv: Path
-    daily_long_csv: Path
+    dataset_csv: Path
 
 
 def installed_yfinance_version() -> str | None:
@@ -388,50 +363,8 @@ def fetch_ticker_valuation(
     return result, rows, warnings
 
 
-def percentile(sorted_values: list[float], pct: float) -> float:
-    if len(sorted_values) == 1:
-        return sorted_values[0]
-    position = (len(sorted_values) - 1) * pct
-    lower = int(position)
-    upper = min(lower + 1, len(sorted_values) - 1)
-    weight = position - lower
-    return sorted_values[lower] * (1 - weight) + sorted_values[upper] * weight
-
-
-def summarize_values(values: list[float]) -> dict[str, Any] | None:
-    clean = sorted(value for value in values if value is not None and value > 0)
-    if not clean:
-        return None
-    return {
-        "count": len(clean),
-        "usable": len(clean) >= MIN_USABLE_METRIC_COUNT,
-        "p25": compact_number(percentile(clean, 0.25)),
-        "median": compact_number(statistics.median(clean)),
-        "p75": compact_number(percentile(clean, 0.75)),
-    }
-
-
-def aggregate_valuation_measures(rows: list[dict[str, Any]], group_fields: tuple[str, ...]) -> list[dict[str, Any]]:
-    buckets: dict[tuple[str, ...], list[float]] = defaultdict(list)
-    for row in rows:
-        key = tuple(str(row.get(field) or "") for field in group_fields)
-        value = safe_positive_number(row.get("value"))
-        if all(key) and value is not None:
-            buckets[key].append(value)
-    output = []
-    for key, values in sorted(buckets.items()):
-        summary = summarize_values(values)
-        if summary is None:
-            continue
-        output.append({
-            **{field: key[index] for index, field in enumerate(group_fields)},
-            **summary,
-        })
-    return output
-
-
-def wide_columns(periods: int) -> list[str]:
-    columns = list(WIDE_BASE_COLUMNS)
+def dataset_columns(periods: int) -> list[str]:
+    columns = list(DATASET_BASE_COLUMNS)
     columns.extend(f"q{index}_period_end" for index in range(1, periods + 1))
     suffixes = ["current", *(f"q{index}" for index in range(1, periods + 1))]
     for metric in VALUATION_MEASURE_TO_METRIC.values():
@@ -439,23 +372,23 @@ def wide_columns(periods: int) -> list[str]:
     return columns
 
 
-def wide_valuation_rows(
+def dataset_snapshot_rows(
     *,
     records: list[dict[str, Any]],
-    rows: list[dict[str, Any]],
+    valuation_rows: list[dict[str, Any]],
     snapshot_date: str,
     periods: int,
 ) -> tuple[list[str], list[dict[str, Any]]]:
-    columns = wide_columns(periods)
+    columns = dataset_columns(periods)
     record_by_symbol = {record["symbol"]: record for record in records}
     rows_by_symbol: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for row in rows:
+    for row in valuation_rows:
         rows_by_symbol[row["symbol"]].append(row)
 
     output: list[dict[str, Any]] = []
     for symbol in sorted(record_by_symbol):
         record = record_by_symbol[symbol]
-        item = {column: record.get(column) for column in WIDE_BASE_COLUMNS}
+        item = {column: record.get(column) for column in DATASET_BASE_COLUMNS}
         item["date"] = snapshot_date
         symbol_rows = rows_by_symbol.get(symbol) or []
         dated_periods = sorted(
@@ -468,10 +401,8 @@ def wide_valuation_rows(
             period_to_suffix[period] = f"q{index}"
         for row in symbol_rows:
             suffix = period_to_suffix.get(row.get("period_end"))
-            if not suffix:
-                continue
             metric = row.get("metric")
-            if metric:
+            if suffix and metric:
                 item[f"{metric}_{suffix}"] = row.get("value")
         output.append(item)
     return columns, output
@@ -500,7 +431,7 @@ def build_panel(
         universe_stats.append(stats)
 
     records: list[dict[str, Any]] = []
-    long_rows: list[dict[str, Any]] = []
+    valuation_rows: list[dict[str, Any]] = []
     warnings: list[str] = []
     for index, record in enumerate(universe):
         valuation, rows, ticker_warnings = fetch_ticker_valuation(
@@ -510,14 +441,14 @@ def build_panel(
         )
         if valuation is not None:
             records.append(valuation)
-        long_rows.extend(rows)
+        valuation_rows.extend(rows)
         warnings.extend(ticker_warnings)
         if sleep_seconds > 0 and index < len(universe) - 1:
             time.sleep(sleep_seconds)
 
-    wide_header, wide_rows = wide_valuation_rows(
+    dataset_header, dataset_records = dataset_snapshot_rows(
         records=records,
-        rows=long_rows,
+        valuation_rows=valuation_rows,
         snapshot_date=snapshot_date,
         periods=periods,
     )
@@ -543,7 +474,7 @@ def build_panel(
                 "Sector/industry classification is a provider snapshot for this refresh, not a permanent taxonomy.",
                 "records stores ticker classification and screener metadata; it does not call Ticker.info.",
                 "valuation_measures Current is Yahoo's provider trailing time-series value, not a same-close recomputation.",
-                "The wide table keeps raw provider fields; it does not add derived valuation-position calculations.",
+                "dataset.csv is one row per refresh date and ticker; reruns replace the same date before writing.",
             ],
         },
         "classification": {
@@ -553,56 +484,18 @@ def build_panel(
         },
         "universe": {"stats": universe_stats, "accepted_symbols": len(universe)},
         "records": records,
-        "valuation_measures": {
-            "long": {
-                "columns": list(VALUATION_MEASURE_COLUMNS),
-                "records": long_rows,
-            },
-            "wide": {
-                "columns": wide_header,
-                "records": wide_rows,
-            },
-            "aggregates": {
-                "market": aggregate_valuation_measures(
-                    long_rows,
-                    ("date", "market", "period_label", "period_end", "measure", "metric"),
-                ),
-                "sector": aggregate_valuation_measures(
-                    long_rows,
-                    ("date", "market", "sector", "period_label", "period_end", "measure", "metric"),
-                ),
-                "industry": aggregate_valuation_measures(
-                    long_rows,
-                    ("date", "market", "sector", "industry", "period_label", "period_end", "measure", "metric"),
-                ),
-            },
+        "dataset": {
+            "columns": dataset_header,
+            "records": dataset_records,
         },
+        "raw_valuation_rows": len(valuation_rows),
         "warnings": [*catalog_warnings, *warnings][:500],
         "warning_count": len(catalog_warnings) + len(warnings),
     }
 
 
-def output_paths(output_dir: Path, snapshot_date: str) -> OutputPaths:
-    daily_dir = output_dir / "daily"
-    return OutputPaths(
-        latest_json=output_dir / "latest.json",
-        latest_wide_csv=output_dir / "latest_wide.csv",
-        latest_long_csv=output_dir / "latest_long.csv",
-        daily_json=daily_dir / f"{snapshot_date}.json",
-        daily_wide_csv=daily_dir / f"{snapshot_date}_wide.csv",
-        daily_long_csv=daily_dir / f"{snapshot_date}_long.csv",
-    )
-
-
-def atomic_write_text(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(text, encoding="utf-8")
-    temporary.replace(path)
-
-
-def write_json(path: Path, payload: dict[str, Any]) -> None:
-    atomic_write_text(path, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+def output_paths(output_dir: Path) -> OutputPaths:
+    return OutputPaths(dataset_csv=output_dir / "dataset.csv")
 
 
 def write_csv(path: Path, columns: list[str], rows: list[dict[str, Any]]) -> None:
@@ -615,29 +508,31 @@ def write_csv(path: Path, columns: list[str], rows: list[dict[str, Any]]) -> Non
     temporary.replace(path)
 
 
-def write_outputs(output_dir: Path, payload: dict[str, Any]) -> OutputPaths:
-    paths = output_paths(output_dir, payload["date"])
-    write_json(paths.latest_json, payload)
-    write_json(paths.daily_json, payload)
-    write_csv(
-        paths.latest_wide_csv,
-        payload["valuation_measures"]["wide"]["columns"],
-        payload["valuation_measures"]["wide"]["records"],
-    )
-    write_csv(
-        paths.daily_wide_csv,
-        payload["valuation_measures"]["wide"]["columns"],
-        payload["valuation_measures"]["wide"]["records"],
-    )
-    write_csv(
-        paths.latest_long_csv,
-        payload["valuation_measures"]["long"]["columns"],
-        payload["valuation_measures"]["long"]["records"],
-    )
-    write_csv(
-        paths.daily_long_csv,
-        payload["valuation_measures"]["long"]["columns"],
-        payload["valuation_measures"]["long"]["records"],
-    )
-    return paths
+def read_existing_dataset(path: Path, *, replace_date: str) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        return [row for row in csv.DictReader(handle) if row.get("date") != replace_date]
 
+
+def dataset_sort_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str]:
+    return (
+        str(row.get("date") or ""),
+        str(row.get("market") or ""),
+        str(row.get("sector") or ""),
+        str(row.get("industry") or ""),
+        str(row.get("symbol") or ""),
+        str(row.get("exchange") or ""),
+        str(row.get("name") or ""),
+    )
+
+
+def write_outputs(output_dir: Path, payload: dict[str, Any]) -> OutputPaths:
+    paths = output_paths(output_dir)
+    columns = payload["dataset"]["columns"]
+    current_rows = payload["dataset"]["records"]
+    if not current_rows:
+        raise RuntimeError("No dataset rows were fetched; leaving dataset.csv unchanged.")
+    existing_rows = read_existing_dataset(paths.dataset_csv, replace_date=payload["date"])
+    write_csv(paths.dataset_csv, columns, sorted([*existing_rows, *current_rows], key=dataset_sort_key))
+    return paths

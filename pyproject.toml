@@ -1,10 +1,20 @@
 [project]
 name = "market-valuation-panel"
 version = "0.1.0"
-description = "Build daily Yahoo Finance valuation panels by market, sector, industry, ticker, and period."
+description = "Maintain a daily Yahoo Finance valuation dataset for US and China equities."
+readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.11"
 dependencies = [
   "yfinance>=0.2.65",
+]
+keywords = ["yahoo-finance", "valuation", "equities", "dataset"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: MIT License",
+  "Topic :: Office/Business :: Financial",
 ]
 
 [project.scripts]
@@ -14,3 +24,5 @@ market-valuation-panel = "market_valuation_panel.cli:main"
 requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+where = ["src"]
