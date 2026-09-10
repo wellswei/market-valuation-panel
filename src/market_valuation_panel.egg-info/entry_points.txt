@@ -1,2 +1,0 @@
-[console_scripts]
-market-valuation-panel = market_valuation_panel.cli:main

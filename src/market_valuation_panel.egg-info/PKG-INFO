@@ -1,6 +1,0 @@
-Metadata-Version: 2.4
-Name: market-valuation-panel
-Version: 0.1.0
-Summary: Build daily Yahoo Finance valuation panels by market, sector, industry, ticker, and period.
-Requires-Python: >=3.11
-Requires-Dist: yfinance>=0.2.65
