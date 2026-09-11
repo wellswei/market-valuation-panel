@@ -46,6 +46,7 @@ SCREENER_AUX_FIELDS = (
     "financialCurrency",
     "regularMarketPrice",
     "regularMarketPreviousClose",
+    "regularMarketTime",
     "sharesOutstanding",
     "impliedSharesOutstanding",
     "epsTrailingTwelveMonths",
