@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import yfinance as yf
 from yfinance import EquityQuery
@@ -22,6 +23,8 @@ DEFAULT_SLEEP_SECONDS = 0.5
 DEFAULT_PERIODS = 5
 DEFAULT_SCREEN_RETRIES = 3
 DEFAULT_SCREEN_RETRY_SLEEP_SECONDS = 3.0
+RUN_TIMEZONE = ZoneInfo("America/New_York")
+SORT_MARKET_CAP_FIELD = "_sort_market_cap"
 US_EXCHANGES = ("NMS", "NYQ", "ASE")
 CN_EXCHANGES = ("SHH", "SHZ")
 
@@ -67,7 +70,6 @@ DATASET_BASE_COLUMNS = (
     "sector",
     "industry",
     "currency",
-    "screener_market_cap",
     *SCREENER_AUX_FIELDS,
 )
 
@@ -178,8 +180,29 @@ def include_symbol(market: str, symbol: str, exchange: str | None) -> bool:
     if market == "CN":
         if not re.fullmatch(r"\d{6}\.(SS|SZ)", symbol):
             return False
-        return not symbol.startswith(("900", "200"))
+        return not symbol.startswith(("900", "200", "201"))
     return False
+
+
+def include_quote(market: str, item: dict[str, Any]) -> bool:
+    symbol = str(item.get("symbol") or "").strip().upper()
+    exchange = item.get("exchange")
+    if not symbol or not include_symbol(market, symbol, exchange):
+        return False
+    if market == "CN" and item.get("currency") != "CNY":
+        return False
+    return True
+
+
+def exchange_local_date(record: dict[str, Any], *, fallback_date: str) -> str:
+    timestamp = safe_number(record.get("regularMarketTime"))
+    timezone_name = str(record.get("exchangeTimezoneName") or "").strip()
+    if timestamp is None or not timezone_name:
+        return fallback_date
+    try:
+        return datetime.fromtimestamp(timestamp, ZoneInfo(timezone_name)).date().isoformat()
+    except Exception:
+        return fallback_date
 
 
 def screen_with_retries(query: EquityQuery, *, offset: int) -> tuple[dict[str, Any] | None, str | None]:
@@ -215,7 +238,7 @@ def collect_industry_quotes(
         for item in quotes:
             symbol = str(item.get("symbol") or "").strip().upper()
             exchange = item.get("exchange")
-            if not symbol or not include_symbol(market, symbol, exchange):
+            if not include_quote(market, item):
                 continue
             record = {
                 "symbol": symbol,
@@ -227,7 +250,7 @@ def collect_industry_quotes(
                 "sector": industry_record["sector"],
                 "industry_key": industry_record["industry_key"],
                 "industry": industry,
-                "screener_market_cap": clean_metric(
+                SORT_MARKET_CAP_FIELD: clean_metric(
                     item.get("marketCap") or item.get("intradaymarketcap"),
                     positive_only=True,
                 ),
@@ -303,14 +326,14 @@ def collect_universe(
             if existing is None:
                 records_by_symbol[symbol] = record
                 continue
-            existing_cap = safe_number(existing.get("screener_market_cap")) or 0
-            new_cap = safe_number(record.get("screener_market_cap")) or 0
+            existing_cap = safe_number(existing.get(SORT_MARKET_CAP_FIELD)) or 0
+            new_cap = safe_number(record.get(SORT_MARKET_CAP_FIELD)) or 0
             if new_cap > existing_cap:
                 records_by_symbol[symbol] = record
 
     records = sorted(
         records_by_symbol.values(),
-        key=lambda item: safe_number(item.get("screener_market_cap")) or 0,
+        key=lambda item: safe_number(item.get(SORT_MARKET_CAP_FIELD)) or 0,
         reverse=True,
     )
     if max_symbols is not None:
@@ -351,6 +374,7 @@ def valuation_measure_rows(
         return [], f"{base['symbol']}: valuation_measures missing"
 
     rows: list[dict[str, Any]] = []
+    row_date = exchange_local_date(base, fallback_date=snapshot_date)
     for measure, series in frame.iterrows():
         measure_name = str(measure).strip()
         metric = VALUATION_MEASURE_TO_METRIC.get(measure_name)
@@ -361,7 +385,7 @@ def valuation_measure_rows(
             if value is None:
                 continue
             rows.append({
-                "date": snapshot_date,
+                "date": row_date,
                 "market": base["market"],
                 "exchange": base.get("exchange"),
                 "symbol": base["symbol"],
@@ -431,7 +455,7 @@ def dataset_snapshot_rows(
     for symbol in sorted(record_by_symbol):
         record = record_by_symbol[symbol]
         item = {column: record.get(column) for column in DATASET_BASE_COLUMNS}
-        item["date"] = snapshot_date
+        item["date"] = exchange_local_date(record, fallback_date=snapshot_date)
         symbol_rows = rows_by_symbol.get(symbol) or []
         dated_periods = sorted(
             {row["period_end"] for row in symbol_rows if row.get("period_end")},
@@ -457,8 +481,9 @@ def build_panel(
     sleep_seconds: float = DEFAULT_SLEEP_SECONDS,
     periods: int = DEFAULT_PERIODS,
 ) -> dict[str, Any]:
-    started_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    snapshot_date = started_at[:10]
+    started_at_datetime = datetime.now(timezone.utc)
+    started_at = started_at_datetime.isoformat(timespec="seconds")
+    snapshot_date = started_at_datetime.astimezone(RUN_TIMEZONE).date().isoformat()
     industry_catalog, catalog_warnings = sector_industry_catalog()
 
     universe: list[dict[str, Any]] = []
@@ -516,9 +541,10 @@ def build_panel(
             ),
             "notes": [
                 "Sector/industry classification is a provider snapshot for this refresh, not a permanent taxonomy.",
-                "records stores ticker classification and screener metadata; it does not call Ticker.info.",
+                "date is the exchange-local date derived from regularMarketTime when available; otherwise it falls back to the New York run date.",
+                "marketCap_current is the maintained market capitalization field; screener market cap is used only for sampling.",
                 "valuation_measures Current is Yahoo's provider trailing time-series value, not a same-close recomputation.",
-                "dataset.csv is one row per refresh date and ticker; reruns replace the same date before writing.",
+                "dataset.csv is one row per market date and ticker; reruns replace the market dates present in the new snapshot before writing.",
             ],
         },
         "classification": {
@@ -546,17 +572,17 @@ def write_csv(path: Path, columns: list[str], rows: list[dict[str, Any]]) -> Non
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
     with temporary.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=columns, extrasaction="ignore")
+        writer = csv.DictWriter(handle, fieldnames=columns, extrasaction="ignore", lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     temporary.replace(path)
 
 
-def read_existing_dataset(path: Path, *, replace_date: str) -> list[dict[str, Any]]:
+def read_existing_dataset(path: Path, *, replace_dates: set[str]) -> list[dict[str, Any]]:
     if not path.exists():
         return []
     with path.open("r", encoding="utf-8", newline="") as handle:
-        return [row for row in csv.DictReader(handle) if row.get("date") != replace_date]
+        return [row for row in csv.DictReader(handle) if row.get("date") not in replace_dates]
 
 
 def dataset_sort_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str]:
@@ -577,6 +603,7 @@ def write_outputs(output_dir: Path, payload: dict[str, Any]) -> OutputPaths:
     current_rows = payload["dataset"]["records"]
     if not current_rows:
         raise RuntimeError("No dataset rows were fetched; leaving dataset.csv unchanged.")
-    existing_rows = read_existing_dataset(paths.dataset_csv, replace_date=payload["date"])
+    replace_dates = {str(row.get("date") or "") for row in current_rows if row.get("date")}
+    existing_rows = read_existing_dataset(paths.dataset_csv, replace_dates=replace_dates)
     write_csv(paths.dataset_csv, columns, sorted([*existing_rows, *current_rows], key=dataset_sort_key))
     return paths

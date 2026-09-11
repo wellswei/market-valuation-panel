@@ -10,7 +10,9 @@ Daily GitHub-maintained Yahoo Finance valuation dataset for US and China equitie
 4. Maintains one table:
    - `data/market_valuation/dataset.csv`
 
-The dataset has one row per refresh date and ticker. Valuation measures are expanded
+The dataset has one row per market date and ticker. `date` is derived from each
+ticker's `regularMarketTime` in its exchange timezone when available, with the New
+York run date as a fallback. Valuation measures are expanded
 into stable columns:
 
 ```text
@@ -20,8 +22,8 @@ into stable columns:
 
 `q1_period_end ... q5_period_end` preserve each issuer's fiscal-period dates.
 
-Reruns replace rows for the same `date` before writing, so a manual retry does not
-duplicate that day's snapshot.
+Reruns replace rows for the market dates present in the new snapshot before writing,
+so a manual retry does not duplicate that day's snapshot.
 
 ## Local Run
 
@@ -46,9 +48,13 @@ rate limits may change upstream.
 
 ## Data Policy
 
-- `records` stores ticker classification and screener metadata.
+- `records` stores ticker classification and selected quote metadata.
 - `dataset.records` stores the rows written into `dataset.csv`.
 - `Current` is Yahoo's provider trailing time-series value, not a same-close recomputation.
+- `marketCap_current` is the maintained market capitalization field. Screener market
+  capitalization is used only for sampling and is not written into `dataset.csv`.
+- China symbols are limited to CNY A-share style listings; B-share code ranges and
+  non-CNY listings are excluded.
 - Sector and industry are Yahoo provider classifications at refresh time, not permanent taxonomy.
 - This dataset is for research and tooling; it is not investment advice.
 
