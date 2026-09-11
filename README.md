@@ -61,9 +61,10 @@ rate limits may change upstream.
 ## GitHub Actions
 
 `.github/workflows/daily-market-valuation.yml` refreshes daily at 17:00 New York time
-and commits `data/market_valuation/dataset.csv` back to the repository. GitHub cron
-runs in UTC, so the workflow wakes at both 21:00 and 22:00 UTC and only proceeds when
-`America/New_York` is actually 17:00. Manual runs are also supported.
+and commits `data/market_valuation/dataset.csv` back to the repository. Because
+GitHub scheduled runs can be delayed or dropped during high-load periods, the
+workflow retries every 30 minutes through 19:00 New York time and skips once a
+scheduled refresh has already succeeded that day. Manual runs are also supported.
 
 The scheduled run uses full coverage by default (`MAX_PER_MARKET=0`). Manual runs can
 override `max_per_market` when a smaller sample is useful for testing.

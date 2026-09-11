@@ -2,10 +2,10 @@ name: Daily Market Valuation Panel
 
 on:
   schedule:
-    # GitHub cron is UTC. These cover 17:00 New York in EDT and EST;
-    # the job below gates on America/New_York so only the matching run refreshes.
-    - cron: "0 21 * * *"
-    - cron: "0 22 * * *"
+    # GitHub cron is UTC. These cover 17:00-19:00 New York in EDT and EST;
+    # the job below gates on America/New_York and skips after the first success.
+    - cron: "0,30 21-23 * * *"
+    - cron: "0 0 * * *"
   workflow_dispatch:
     inputs:
       max_per_market:
@@ -14,6 +14,7 @@ on:
         default: "0"
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -27,33 +28,60 @@ jobs:
       MAX_PER_MARKET: ${{ github.event.inputs.max_per_market || '0' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
-      - name: Check New York run hour
-        id: ny-hour
+      - name: Check retry window
+        id: retry-window
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if [ "$(TZ=America/New_York date +%H)" = "17" ]; then
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-          else
+
+          ny_hour="$(TZ=America/New_York date +%H)"
+          ny_minute="$(TZ=America/New_York date +%M)"
+          if [ "$ny_hour" -lt 17 ] || [ "$ny_hour" -gt 19 ] || { [ "$ny_hour" -eq 19 ] && [ "$ny_minute" != "00" ]; }; then
             echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "Outside New York retry window."
+            exit 0
+          fi
+
+          ny_date="$(TZ=America/New_York date +%F)"
+          window_start="$(TZ=America/New_York date -d "$ny_date 17:00" -u +%Y-%m-%dT%H:%M:%SZ)"
+          current_run="${{ github.run_id }}"
+          prior_success="$(
+            gh api "repos/${GITHUB_REPOSITORY}/actions/runs?event=schedule&status=success&per_page=50" \
+              --jq '.workflow_runs[]
+                | select(.name == "Daily Market Valuation Panel")
+                | select(.created_at >= "'"$window_start"'")
+                | select((.id | tostring) != "'"$current_run"'")
+                | .id' \
+              | head -n 1
+          )"
+
+          if [ -n "$prior_success" ]; then
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "A scheduled refresh already succeeded today: $prior_success"
+          else
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/setup-python@v5
-        if: steps.ny-hour.outputs.should_run == 'true'
+        if: steps.retry-window.outputs.should_run == 'true'
         with:
           python-version: "3.12"
 
       - name: Install package
-        if: steps.ny-hour.outputs.should_run == 'true'
+        if: steps.retry-window.outputs.should_run == 'true'
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e .
 
       - name: Refresh valuation panel
-        if: steps.ny-hour.outputs.should_run == 'true'
+        if: steps.retry-window.outputs.should_run == 'true'
         run: |
           market-valuation-panel refresh \
             --max-per-market "$MAX_PER_MARKET" \
@@ -61,7 +89,7 @@ jobs:
             --output-dir data/market_valuation
 
       - name: Commit updated panel
-        if: steps.ny-hour.outputs.should_run == 'true'
+        if: steps.retry-window.outputs.should_run == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
