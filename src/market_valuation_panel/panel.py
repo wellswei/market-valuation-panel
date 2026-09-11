@@ -46,7 +46,6 @@ SCREENER_AUX_FIELDS = (
     "financialCurrency",
     "regularMarketPrice",
     "regularMarketPreviousClose",
-    "regularMarketTime",
     "sharesOutstanding",
     "impliedSharesOutstanding",
     "epsTrailingTwelveMonths",
@@ -254,6 +253,7 @@ def collect_industry_quotes(
                     item.get("marketCap") or item.get("intradaymarketcap"),
                     positive_only=True,
                 ),
+                "regularMarketTime": item.get("regularMarketTime"),
             }
             for field in SCREENER_AUX_FIELDS:
                 record[field] = item.get(field)

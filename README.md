@@ -11,9 +11,10 @@ Daily GitHub-maintained Yahoo Finance valuation dataset for US and China equitie
    - `data/market_valuation/dataset.csv`
 
 The dataset has one row per market date and ticker. `date` is derived from each
-ticker's `regularMarketTime` in its exchange timezone when available, with the New
-York run date as a fallback. Valuation measures are expanded
-into stable columns:
+ticker's latest regular-market quote time in its exchange timezone when available,
+with the New York run date as a fallback. The source timestamp is used internally
+and is not written into `dataset.csv`. Valuation measures are expanded into stable
+columns:
 
 ```text
 <metric>_current
