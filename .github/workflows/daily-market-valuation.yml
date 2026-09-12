@@ -2,10 +2,16 @@ name: Daily Market Valuation Panel
 
 on:
   schedule:
-    # GitHub cron is UTC. These cover 17:00-19:00 New York in EDT and EST;
-    # the job below gates on America/New_York and skips after the first success.
-    - cron: "0,30 21-23 * * *"
-    - cron: "0 0 * * *"
+    # GitHub cron is UTC. These off-peak entries cover 17:07-19:07 New York
+    # in EDT and EST. The job gates on the scheduled New York time and skips
+    # after the first success.
+    - cron: "7 21 * * *"
+    - cron: "37 21 * * *"
+    - cron: "7 22 * * *"
+    - cron: "37 22 * * *"
+    - cron: "7 23 * * *"
+    - cron: "37 23 * * *"
+    - cron: "7 0 * * *"
   workflow_dispatch:
     inputs:
       max_per_market:
@@ -41,15 +47,20 @@ jobs:
             exit 0
           fi
 
-          ny_hour="$(TZ=America/New_York date +%H)"
-          ny_minute="$(TZ=America/New_York date +%M)"
-          if [ "$ny_hour" -lt 17 ] || [ "$ny_hour" -gt 19 ] || { [ "$ny_hour" -eq 19 ] && [ "$ny_minute" != "00" ]; }; then
+          cron_minute="$(echo "${{ github.event.schedule }}" | awk '{print $1}')"
+          cron_hour="$(echo "${{ github.event.schedule }}" | awk '{print $2}')"
+          scheduled_local="$(
+            TZ=America/New_York date -d "$(date -u +%F) ${cron_hour}:${cron_minute} UTC" "+%F %H %M"
+          )"
+          ny_date="$(echo "$scheduled_local" | awk '{print $1}')"
+          ny_hour="$(echo "$scheduled_local" | awk '{print $2}')"
+          ny_minute="$(echo "$scheduled_local" | awk '{print $3}')"
+          if [ "$ny_hour" -lt 17 ] || [ "$ny_hour" -gt 19 ] || { [ "$ny_hour" -eq 19 ] && [ "$ny_minute" -gt 7 ]; }; then
             echo "should_run=false" >> "$GITHUB_OUTPUT"
-            echo "Outside New York retry window."
+            echo "Scheduled New York time ${ny_date} ${ny_hour}:${ny_minute} is outside the retry window."
             exit 0
           fi
 
-          ny_date="$(TZ=America/New_York date +%F)"
           window_start="$(TZ=America/New_York date -d "$ny_date 17:00" -u +%Y-%m-%dT%H:%M:%SZ)"
           current_run="${{ github.run_id }}"
           prior_success="$(
