@@ -22,8 +22,9 @@ source timestamp. Valuation measures are expanded into stable columns:
 
 `q1_period_end ... q5_period_end` preserve each issuer's fiscal-period dates.
 
-Reruns replace rows for the market dates present in the new snapshot before writing,
-so a manual retry does not duplicate that day's snapshot.
+Only rows whose derived `date` equals the New York run date are written; stale
+quote dates are excluded from that day's append. Reruns replace rows for the same
+run date before writing, so a manual retry does not duplicate that day's snapshot.
 
 ## Local Run
 
@@ -51,6 +52,8 @@ rate limits may change upstream.
 - `records` stores ticker classification and selected quote metadata.
 - `dataset.records` stores the rows written into `dataset.csv`.
 - `Current` is Yahoo's provider trailing time-series value, not a same-close recomputation.
+- Rows with stale quote dates are discarded from the daily append instead of being
+  written under older dates.
 - `marketCap_current` is the maintained market capitalization field. Screener market
   capitalization is used only for sampling and is not written into `dataset.csv`.
 - China symbols are limited to CNY A-share style listings; B-share code ranges and

@@ -475,6 +475,11 @@ def dataset_snapshot_rows(
     return columns, output
 
 
+def current_date_rows(rows: list[dict[str, Any]], *, snapshot_date: str) -> tuple[list[dict[str, Any]], int]:
+    current_rows = [row for row in rows if row.get("date") == snapshot_date]
+    return current_rows, len(rows) - len(current_rows)
+
+
 def build_panel(
     *,
     markets: tuple[str, ...] = ("US", "CN"),
@@ -516,11 +521,15 @@ def build_panel(
         if sleep_seconds > 0 and index < len(universe) - 1:
             time.sleep(sleep_seconds)
 
-    dataset_header, dataset_records = dataset_snapshot_rows(
+    dataset_header, unfiltered_dataset_records = dataset_snapshot_rows(
         records=records,
         valuation_rows=valuation_rows,
         snapshot_date=snapshot_date,
         periods=periods,
+    )
+    dataset_records, stale_date_records = current_date_rows(
+        unfiltered_dataset_records,
+        snapshot_date=snapshot_date,
     )
 
     return {
@@ -545,7 +554,8 @@ def build_panel(
                 "date is the exchange-local date derived from regularMarketTime when available; otherwise it falls back to the New York run date.",
                 "marketCap_current is the maintained market capitalization field; screener market cap is used only for sampling.",
                 "valuation_measures Current is Yahoo's provider trailing time-series value, not a same-close recomputation.",
-                "dataset.csv is one row per market date and ticker; reruns replace the market dates present in the new snapshot before writing.",
+                "Only rows whose derived date equals the New York run date are written; stale quote dates are excluded.",
+                "dataset.csv is one row per market date and ticker; reruns replace the current run date before writing.",
             ],
         },
         "classification": {
@@ -558,6 +568,7 @@ def build_panel(
         "dataset": {
             "columns": dataset_header,
             "records": dataset_records,
+            "excluded_stale_date_records": stale_date_records,
         },
         "raw_valuation_rows": len(valuation_rows),
         "warnings": [*catalog_warnings, *warnings][:500],
@@ -604,7 +615,7 @@ def write_outputs(output_dir: Path, payload: dict[str, Any]) -> OutputPaths:
     current_rows = payload["dataset"]["records"]
     if not current_rows:
         raise RuntimeError("No dataset rows were fetched; leaving dataset.csv unchanged.")
-    replace_dates = {str(row.get("date") or "") for row in current_rows if row.get("date")}
+    replace_dates = {payload["date"]}
     existing_rows = read_existing_dataset(paths.dataset_csv, replace_dates=replace_dates)
     write_csv(paths.dataset_csv, columns, sorted([*existing_rows, *current_rows], key=dataset_sort_key))
     return paths

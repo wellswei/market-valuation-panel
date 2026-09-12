@@ -28,6 +28,7 @@ def command_refresh(args: argparse.Namespace) -> None:
         "provider_version": payload["provider_version"],
         "records": len(payload["records"]),
         "dataset_rows": len(payload["dataset"]["records"]),
+        "excluded_stale_date_records": payload["dataset"]["excluded_stale_date_records"],
         "raw_valuation_rows": payload["raw_valuation_rows"],
         "industry_count": payload["classification"]["industry_count"],
         "universe": {
