@@ -2,15 +2,21 @@ name: Daily Market Valuation Panel
 
 on:
   schedule:
-    # GitHub cron is UTC. These off-peak entries cover 17:07-19:07 New York
-    # in EDT and EST. The job gates on the scheduled New York time and skips
-    # after the first success.
+    # GitHub cron is UTC. These off-peak entries cover every 15 minutes from
+    # 17:07 through 19:07 New York in EDT and EST. The job gates on the scheduled
+    # New York time and skips after the first success.
     - cron: "7 21 * * *"
+    - cron: "22 21 * * *"
     - cron: "37 21 * * *"
+    - cron: "52 21 * * *"
     - cron: "7 22 * * *"
+    - cron: "22 22 * * *"
     - cron: "37 22 * * *"
+    - cron: "52 22 * * *"
     - cron: "7 23 * * *"
+    - cron: "22 23 * * *"
     - cron: "37 23 * * *"
+    - cron: "52 23 * * *"
     - cron: "7 0 * * *"
   workflow_dispatch:
     inputs:
@@ -43,10 +49,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual dispatch at UTC $(date -u +%Y-%m-%dT%H:%M:%SZ), New York $(TZ=America/New_York date +%Y-%m-%dT%H:%M:%S%z)."
             echo "should_run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
+          echo "Actual start UTC: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Actual start New York: $(TZ=America/New_York date +%Y-%m-%dT%H:%M:%S%z)"
+          echo "GitHub schedule: ${{ github.event.schedule }}"
           cron_minute="$(echo "${{ github.event.schedule }}" | awk '{print $1}')"
           cron_hour="$(echo "${{ github.event.schedule }}" | awk '{print $2}')"
           scheduled_local="$(
@@ -55,6 +65,7 @@ jobs:
           ny_date="$(echo "$scheduled_local" | awk '{print $1}')"
           ny_hour="$(echo "$scheduled_local" | awk '{print $2}')"
           ny_minute="$(echo "$scheduled_local" | awk '{print $3}')"
+          echo "Scheduled New York time: ${ny_date} ${ny_hour}:${ny_minute}"
           if [ "$ny_hour" -lt 17 ] || [ "$ny_hour" -gt 19 ] || { [ "$ny_hour" -eq 19 ] && [ "$ny_minute" -gt 7 ]; }; then
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             echo "Scheduled New York time ${ny_date} ${ny_hour}:${ny_minute} is outside the retry window."
@@ -62,6 +73,7 @@ jobs:
           fi
 
           window_start="$(TZ=America/New_York date -d "$ny_date 17:00" -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Window start UTC: $window_start"
           current_run="${{ github.run_id }}"
           prior_success="$(
             gh api "repos/${GITHUB_REPOSITORY}/actions/runs?event=schedule&status=success&per_page=50" \
@@ -78,6 +90,7 @@ jobs:
             echo "A scheduled refresh already succeeded today: $prior_success"
           else
             echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "No prior scheduled success found; this run will refresh."
           fi
 
       - uses: actions/setup-python@v5
@@ -109,5 +122,6 @@ jobs:
             echo "No valuation panel changes to commit."
           else
             git commit -m "Update market valuation panel"
+            git pull --rebase origin main
             git push
           fi

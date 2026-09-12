@@ -66,9 +66,9 @@ rate limits may change upstream.
 `.github/workflows/daily-market-valuation.yml` refreshes daily at 17:00 New York time
 and commits `data/market_valuation/dataset.csv` back to the repository. Because
 GitHub scheduled runs can be delayed or dropped during high-load periods, the
-workflow uses off-peak retry entries around 17:07, 17:37, 18:07, 18:37, and 19:07
-New York time and skips once a scheduled refresh has already succeeded that day.
-Manual runs are also supported.
+workflow uses off-peak retry entries every 15 minutes from 17:07 through 19:07
+New York time, logs both scheduled and actual start times, and skips once a
+scheduled refresh has already succeeded that day. Manual runs are also supported.
 
 The scheduled run uses full coverage by default (`MAX_PER_MARKET=0`). Manual runs can
 override `max_per_market` when a smaller sample is useful for testing.
