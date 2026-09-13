@@ -22,6 +22,10 @@ def command_refresh(args: argparse.Namespace) -> None:
         periods=args.periods,
     )
     paths = write_outputs(args.output_dir, payload)
+    no_current_date_rows = (
+        len(payload["dataset"]["records"]) == 0
+        and payload["dataset"]["excluded_stale_date_records"] > 0
+    )
     print(json.dumps({
         "generated_at": payload["generated_at"],
         "date": payload["date"],
@@ -46,6 +50,11 @@ def command_refresh(args: argparse.Namespace) -> None:
         },
         "outputs": {
             "dataset_csv": str(paths.dataset_csv),
+            "skipped_write": no_current_date_rows,
+            "skip_reason": (
+                "no rows matched the New York run date"
+                if no_current_date_rows else None
+            ),
         },
         "warning_count": payload["warning_count"],
     }, ensure_ascii=False, indent=2))

@@ -614,7 +614,9 @@ def write_outputs(output_dir: Path, payload: dict[str, Any]) -> OutputPaths:
     columns = payload["dataset"]["columns"]
     current_rows = payload["dataset"]["records"]
     if not current_rows:
-        raise RuntimeError("No dataset rows were fetched; leaving dataset.csv unchanged.")
+        if payload["dataset"].get("excluded_stale_date_records"):
+            return paths
+        raise RuntimeError("No dataset rows were fetched from Yahoo; leaving dataset.csv unchanged.")
     replace_dates = {payload["date"]}
     existing_rows = read_existing_dataset(paths.dataset_csv, replace_dates=replace_dates)
     write_csv(paths.dataset_csv, columns, sorted([*existing_rows, *current_rows], key=dataset_sort_key))

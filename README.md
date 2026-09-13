@@ -69,6 +69,9 @@ GitHub scheduled runs can be delayed or dropped during high-load periods, the
 workflow uses off-peak retry entries every 15 minutes from 17:07 through 19:07
 New York time, logs both scheduled and actual start times, and skips once a
 scheduled refresh has already succeeded that day. Manual runs are also supported.
+Scheduled weekend runs skip before fetching. If a market holiday produces no rows
+for the New York run date, the workflow leaves `dataset.csv` unchanged and exits
+successfully.
 
 The scheduled run uses full coverage by default (`MAX_PER_MARKET=0`). Manual runs can
 override `max_per_market` when a smaller sample is useful for testing.
