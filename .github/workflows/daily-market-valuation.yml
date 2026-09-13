@@ -24,6 +24,10 @@ on:
         description: "Maximum accepted symbols per market; 0 means full available universe"
         required: false
         default: "0"
+      sleep_seconds:
+        description: "Delay between ticker valuation requests"
+        required: false
+        default: "0.2"
 
 permissions:
   actions: read
@@ -38,6 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MAX_PER_MARKET: ${{ github.event.inputs.max_per_market || '0' }}
+      SLEEP_SECONDS: ${{ github.event.inputs.sleep_seconds || '0.2' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -66,12 +71,6 @@ jobs:
           ny_hour="$(echo "$scheduled_local" | awk '{print $2}')"
           ny_minute="$(echo "$scheduled_local" | awk '{print $3}')"
           echo "Scheduled New York time: ${ny_date} ${ny_hour}:${ny_minute}"
-          ny_dow="$(TZ=America/New_York date -d "$ny_date 12:00" +%u)"
-          if [ "$ny_dow" -gt 5 ]; then
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-            echo "Scheduled New York date $ny_date is a weekend; skipping refresh."
-            exit 0
-          fi
 
           if [ "$ny_hour" -lt 17 ] || [ "$ny_hour" -gt 19 ] || { [ "$ny_hour" -eq 19 ] && [ "$ny_minute" -gt 7 ]; }; then
             echo "should_run=false" >> "$GITHUB_OUTPUT"
@@ -116,7 +115,7 @@ jobs:
         run: |
           market-valuation-panel refresh \
             --max-per-market "$MAX_PER_MARKET" \
-            --sleep-seconds 0.5 \
+            --sleep-seconds "$SLEEP_SECONDS" \
             --output-dir data/market_valuation
 
       - name: Commit updated panel
