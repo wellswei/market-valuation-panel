@@ -1,23 +1,6 @@
 name: Daily Market Valuation Panel
 
 on:
-  schedule:
-    # GitHub cron is UTC. These off-peak entries cover every 15 minutes from
-    # 17:07 through 19:07 New York in EDT and EST. The job gates on the scheduled
-    # New York time and skips after the first success.
-    - cron: "7 21 * * *"
-    - cron: "22 21 * * *"
-    - cron: "37 21 * * *"
-    - cron: "52 21 * * *"
-    - cron: "7 22 * * *"
-    - cron: "22 22 * * *"
-    - cron: "37 22 * * *"
-    - cron: "52 22 * * *"
-    - cron: "7 23 * * *"
-    - cron: "22 23 * * *"
-    - cron: "37 23 * * *"
-    - cron: "52 23 * * *"
-    - cron: "7 0 * * *"
   workflow_dispatch:
     inputs:
       max_per_market:
