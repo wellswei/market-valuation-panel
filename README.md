@@ -77,6 +77,24 @@ override `max_per_market` when a smaller sample is useful for testing. Scheduled
 runs use a `0.2` second delay between ticker valuation requests by default; manual
 runs can override `sleep_seconds` when testing throughput.
 
+## Maintainer Daily Trigger
+
+For a compact daily manual trigger plus quality check, use:
+
+```bash
+scripts/daily_refresh.py --wait
+```
+
+The script skips duplicate dispatch if today's manual run already exists, triggers
+`daily-market-valuation.yml` when needed, waits for completion when `--wait` is
+supplied, fast-forwards the local checkout after a successful run, validates the
+latest `dataset.csv` partition, and prints one compact `STATUS=...` line.
+
+Use `--json` when the full machine-readable result is needed. Warning status
+`coverage_gap` means Yahoo returned no valuation measures for some accepted
+symbols; this is classified from the workflow log by checking whether
+`warning_count == 2 * (accepted_symbols - records)`.
+
 ## License
 
 MIT
