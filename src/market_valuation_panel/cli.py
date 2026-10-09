@@ -49,7 +49,7 @@ def command_refresh(args: argparse.Namespace) -> None:
             ],
         },
         "outputs": {
-            "dataset_csv": str(paths.dataset_csv),
+            "daily_csv": str(paths.daily_csv),
             "skipped_write": no_current_date_rows,
             "skip_reason": (
                 "no rows matched the New York run date"
@@ -93,7 +93,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--output-dir",
         type=Path,
         default=Path("data/market_valuation"),
-        help="Output directory for the maintained dataset.csv table.",
+        help="Output directory for date-partitioned daily CSV files.",
     )
     refresh.set_defaults(
         handler=lambda args: (

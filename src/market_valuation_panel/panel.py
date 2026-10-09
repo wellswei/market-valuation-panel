@@ -76,7 +76,7 @@ DATASET_BASE_COLUMNS = (
 
 @dataclass(frozen=True)
 class OutputPaths:
-    dataset_csv: Path
+    daily_csv: Path
 
 
 def installed_yfinance_version() -> str | None:
@@ -555,7 +555,7 @@ def build_panel(
                 "marketCap_current is the maintained market capitalization field; screener market cap is used only for sampling.",
                 "valuation_measures Current is Yahoo's provider trailing time-series value, not a same-close recomputation.",
                 "Only rows whose derived date equals the New York run date are written; stale quote dates are excluded.",
-                "dataset.csv is one row per market date and ticker; reruns replace the current run date before writing.",
+                "Each daily CSV is one row per ticker; reruns replace only the current run date file.",
             ],
         },
         "classification": {
@@ -576,8 +576,8 @@ def build_panel(
     }
 
 
-def output_paths(output_dir: Path) -> OutputPaths:
-    return OutputPaths(dataset_csv=output_dir / "dataset.csv")
+def output_paths(output_dir: Path, snapshot_date: str) -> OutputPaths:
+    return OutputPaths(daily_csv=output_dir / "daily" / f"{snapshot_date}.csv")
 
 
 def write_csv(path: Path, columns: list[str], rows: list[dict[str, Any]]) -> None:
@@ -588,13 +588,6 @@ def write_csv(path: Path, columns: list[str], rows: list[dict[str, Any]]) -> Non
         writer.writeheader()
         writer.writerows(rows)
     temporary.replace(path)
-
-
-def read_existing_dataset(path: Path, *, replace_dates: set[str]) -> list[dict[str, Any]]:
-    if not path.exists():
-        return []
-    with path.open("r", encoding="utf-8", newline="") as handle:
-        return [row for row in csv.DictReader(handle) if row.get("date") not in replace_dates]
 
 
 def dataset_sort_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str]:
@@ -610,14 +603,14 @@ def dataset_sort_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str,
 
 
 def write_outputs(output_dir: Path, payload: dict[str, Any]) -> OutputPaths:
-    paths = output_paths(output_dir)
+    paths = output_paths(output_dir, payload["date"])
     columns = payload["dataset"]["columns"]
     current_rows = payload["dataset"]["records"]
     if not current_rows:
         if payload["dataset"].get("excluded_stale_date_records"):
             return paths
-        raise RuntimeError("No dataset rows were fetched from Yahoo; leaving dataset.csv unchanged.")
-    replace_dates = {payload["date"]}
-    existing_rows = read_existing_dataset(paths.dataset_csv, replace_dates=replace_dates)
-    write_csv(paths.dataset_csv, columns, sorted([*existing_rows, *current_rows], key=dataset_sort_key))
+        raise RuntimeError("No dataset rows were fetched from Yahoo; leaving daily files unchanged.")
+    if any(row.get("date") != payload["date"] for row in current_rows):
+        raise ValueError("Daily CSV rows must match the run date")
+    write_csv(paths.daily_csv, columns, sorted(current_rows, key=dataset_sort_key))
     return paths

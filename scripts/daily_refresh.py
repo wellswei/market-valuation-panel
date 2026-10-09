@@ -20,7 +20,7 @@ NY_TZ = ZoneInfo("America/New_York")
 DEFAULT_REPO = "wellswei/market-valuation-panel"
 DEFAULT_WORKFLOW = "daily-market-valuation.yml"
 DEFAULT_BRANCH = "main"
-DEFAULT_DATASET = Path("data/market_valuation/dataset.csv")
+DEFAULT_DATA_DIR = Path("data/market_valuation/daily")
 
 
 @dataclass(frozen=True)
@@ -196,9 +196,22 @@ def coverage_rate(rows: list[dict[str, str]], column: str) -> float:
     return round(sum(1 for row in rows if row.get(column) not in ("", None)) / len(rows), 4)
 
 
-def validate_dataset(path: Path, *, expected_date: str) -> dict[str, Any]:
-    with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+def validate_dataset(directory: Path, *, expected_date: str) -> dict[str, Any]:
+    rows: list[dict[str, str]] = []
+    partition_mismatches = 0
+    schema_mismatches = 0
+    columns: list[str] | None = None
+    for path in sorted(directory.glob("????-??-??.csv")):
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if columns is None:
+                columns = reader.fieldnames
+            elif reader.fieldnames != columns:
+                schema_mismatches += 1
+            for row in reader:
+                if row.get("date") != path.stem:
+                    partition_mismatches += 1
+                rows.append(row)
     date_counts = Counter(row["date"] for row in rows)
     expected_rows = [row for row in rows if row.get("date") == expected_date]
     key_counts = Counter((row.get("date"), row.get("market"), row.get("symbol")) for row in rows)
@@ -228,7 +241,7 @@ def validate_dataset(path: Path, *, expected_date: str) -> dict[str, Any]:
     ]
     return {
         "rows_total": len(rows),
-        "columns": len(rows[0]) if rows else 0,
+        "columns": len(columns or []),
         "date_counts": dict(sorted(date_counts.items())),
         "expected_date": expected_date,
         "expected_date_rows": len(expected_rows),
@@ -237,6 +250,8 @@ def validate_dataset(path: Path, *, expected_date: str) -> dict[str, Any]:
         "bshare_count": len(b_shares),
         "cn_non_cny_count": len(cn_non_cny),
         "expected_date_regular_market_time_mismatches": len(date_mismatches),
+        "partition_date_mismatches": partition_mismatches,
+        "schema_mismatches": schema_mismatches,
         "coverage": {column: coverage_rate(expected_rows, column) for column in coverage_columns},
     }
 
@@ -268,6 +283,8 @@ def quality_is_ok(quality: dict[str, Any]) -> bool:
         and quality.get("bshare_count") == 0
         and quality.get("cn_non_cny_count") == 0
         and quality.get("expected_date_regular_market_time_mismatches") == 0
+        and quality.get("partition_date_mismatches") == 0
+        and quality.get("schema_mismatches") == 0
     )
 
 
@@ -287,6 +304,8 @@ def status_line(result: dict[str, Any]) -> str:
         f"bshares={quality.get('bshare_count')}",
         f"cn_non_cny={quality.get('cn_non_cny_count')}",
         f"date_mismatch={quality.get('expected_date_regular_market_time_mismatches')}",
+        f"partition_mismatch={quality.get('partition_date_mismatches')}",
+        f"schema_mismatch={quality.get('schema_mismatches')}",
         f"warnings={warnings.get('kind')}",
         f"missing_valuation={warnings.get('missing_valuation_symbols')}",
     ]
@@ -300,7 +319,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo", default=DEFAULT_REPO)
     parser.add_argument("--workflow", default=DEFAULT_WORKFLOW)
     parser.add_argument("--branch", default=DEFAULT_BRANCH)
-    parser.add_argument("--dataset", type=Path, default=DEFAULT_DATASET)
+    parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--max-per-market", default="0")
     parser.add_argument("--sleep-seconds", default="0.2")
     parser.add_argument("--wait", action="store_true", help="Wait until the run completes, pull, and validate the dataset.")
@@ -347,8 +366,7 @@ def main() -> int:
         result["warnings"] = warning_status(summary)
         if run.get("conclusion") == "success" and not args.no_pull:
             git_pull(args.branch)
-        if args.dataset.exists():
-            result["quality"] = validate_dataset(args.dataset, expected_date=ny_date)
+        result["quality"] = validate_dataset(args.data_dir, expected_date=ny_date)
 
     quality = result.get("quality") or {}
     run_ok = result["run"].get("status") != "completed" or result["run"].get("conclusion") == "success"
