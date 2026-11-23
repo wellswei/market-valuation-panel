@@ -63,27 +63,30 @@ rate limits may change upstream.
 
 ## GitHub Actions
 
-`.github/workflows/daily-market-valuation.yml` runs on manual dispatch and commits
-the run date's CSV back to the repository. The maintainer trigger below dispatches
-it each day at 17:30 New York time. If a weekend or market holiday produces no
-rows for the New York run date, the workflow leaves existing daily files unchanged
-and exits successfully.
+`.github/workflows/daily-market-valuation.yml` runs once a day on schedule and
+commits the run date's CSV back to the repository. The cron is `30 22 * * *`
+UTC, which is 17:30 New York time on standard time and 18:30 during daylight
+time. Manual dispatch remains available with the same defaults. If a weekend or
+market holiday produces no rows for the New York run date, the workflow leaves
+existing daily files unchanged and exits successfully.
 
 The workflow uses full coverage by default (`MAX_PER_MARKET=0`) and a `0.2` second
-delay between ticker valuation requests. Manual runs can override those inputs.
+delay between ticker valuation requests. Scheduled runs use those defaults when
+dispatch inputs are absent. Manual runs can override those inputs.
 
 ## Maintainer Daily Trigger
 
-For a compact daily manual trigger plus quality check, use:
+For a compact manual trigger plus quality check, use:
 
 ```bash
 scripts/daily_refresh.py --wait
 ```
 
-The script skips duplicate dispatch if today's manual run already exists, triggers
-`daily-market-valuation.yml` when needed, waits for completion when `--wait` is
-supplied, fast-forwards the local checkout after a successful run, validates all
-daily files and the latest partition, and prints one compact `STATUS=...` line.
+The script skips duplicate dispatch if today's scheduled or manual run already
+exists, triggers `daily-market-valuation.yml` when needed, waits for completion
+when `--wait` is supplied, fast-forwards the local checkout after a successful
+run, validates all daily files and the latest partition, and prints one compact
+`STATUS=...` line.
 
 Use `--json` when the full machine-readable result is needed. Warning status
 `coverage_gap` means Yahoo returned no valuation measures for some accepted

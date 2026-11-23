@@ -81,7 +81,7 @@ def find_today_run(runs: list[dict[str, Any]], *, ny_date: str, branch: str) -> 
         run for run in runs
         if run_created_ny_date(run) == ny_date
         and run.get("headBranch") == branch
-        and run.get("event") == "workflow_dispatch"
+        and run.get("event") in {"workflow_dispatch", "schedule"}
     ]
     if not eligible:
         return None
