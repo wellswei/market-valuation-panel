@@ -5,14 +5,15 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from datetime import datetime
 from pathlib import Path
 
-from market_valuation_panel.panel import write_outputs
+from market_valuation_panel.panel import current_date_rows, dataset_snapshot_rows, write_outputs
 
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from daily_refresh import validate_dataset, quality_is_ok  # noqa: E402
+from daily_refresh import find_today_run, validate_dataset, quality_is_ok  # noqa: E402
 
 
 class DailyFilesTest(unittest.TestCase):
@@ -43,6 +44,44 @@ class DailyFilesTest(unittest.TestCase):
             }}
             write_outputs(output, stale)
             self.assertFalse((output / "daily" / "2026-10-07.csv").exists())
+
+    def test_delayed_schedule_keeps_the_previous_quote_date(self) -> None:
+        run = {
+            "event": "schedule", "createdAt": "2026-11-24T06:12:21Z",
+            "headBranch": "main", "status": "completed", "conclusion": "success",
+        }
+        self.assertEqual(find_today_run([run], ny_date="2026-11-23", branch="main"), run)
+        self.assertIsNone(find_today_run([run], ny_date="2026-11-24", branch="main"))
+        quote_time = int(datetime.fromisoformat("2026-11-23T16:00:00-05:00").timestamp())
+        _, rows = dataset_snapshot_rows(
+            records=[
+                {"market": "US", "symbol": "US", "regularMarketTime": quote_time,
+                 "exchangeTimezoneName": "America/New_York"},
+                {"market": "CN", "symbol": "CN", "regularMarketTime": quote_time,
+                 "exchangeTimezoneName": "Asia/Shanghai"},
+                {"market": "US", "symbol": "UNKNOWN"},
+            ],
+            valuation_rows=[], fallback_date=None, periods=5,
+        )
+        selected, excluded = current_date_rows(rows, snapshot_date="2026-11-23")
+        self.assertEqual([row["symbol"] for row in selected], ["US"])
+        self.assertEqual(excluded, 2)
+
+    def test_dated_retry_preserves_existing_market_rows(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            day = "2026-11-24"
+            columns = ["date", "market", "symbol"]
+
+            def payload(market: str) -> dict:
+                return {"date": day, "dataset": {"columns": columns, "records": [
+                    {"date": day, "market": market, "symbol": market},
+                ]}}
+
+            paths = write_outputs(output, payload("CN"))
+            write_outputs(output, payload("US"), preserve_existing=True)
+            with paths.daily_csv.open(newline="") as handle:
+                self.assertEqual([row["market"] for row in csv.DictReader(handle)], ["CN", "US"])
 
     def test_quality_checks_partition_dates(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

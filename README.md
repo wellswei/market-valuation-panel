@@ -22,9 +22,11 @@ source timestamp. Valuation measures are expanded into stable columns:
 
 `q1_period_end ... q5_period_end` preserve each issuer's fiscal-period dates.
 
-Only rows whose derived `date` equals the New York run date are written; stale
-quote dates are excluded. Reruns replace that date's CSV without changing older
-files, so a manual retry does not duplicate the snapshot.
+Only rows matching the target date are written. Local runs default to the New
+York run date. An explicit `--date YYYY-MM-DD` requires a valid exchange-local
+quote timestamp for every written row. It can recover a delayed snapshot only
+while Yahoo still reports quotes for that date. Explicit date runs retain
+existing rows for tickers that were unavailable on the rerun.
 
 ## Local Run
 
@@ -66,9 +68,10 @@ rate limits may change upstream.
 `.github/workflows/daily-market-valuation.yml` runs once a day on schedule and
 commits the run date's CSV back to the repository. The cron is `30 22 * * *`
 UTC, which is 17:30 New York time on standard time and 18:30 during daylight
-time. Manual dispatch remains available with the same defaults. If a weekend or
-market holiday produces no rows for the New York run date, the workflow leaves
-existing daily files unchanged and exits successfully.
+time. A delayed scheduled run targets the date of its UTC schedule slot, even
+if execution starts after New York midnight. Manual dispatch defaults to the
+New York dispatch date and accepts an explicit `target_date`. If the provider
+no longer has matching quotes, the workflow leaves existing files unchanged.
 
 The workflow uses full coverage by default (`MAX_PER_MARKET=0`) and a `0.2` second
 delay between ticker valuation requests. Scheduled runs use those defaults when

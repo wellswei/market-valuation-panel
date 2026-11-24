@@ -10,7 +10,7 @@ import sys
 import time
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -49,7 +49,12 @@ def current_ny_date() -> str:
     return datetime.now(timezone.utc).astimezone(NY_TZ).date().isoformat()
 
 
-def run_created_ny_date(run: dict[str, Any]) -> str | None:
+def scheduled_snapshot_date(created_at: datetime) -> date:
+    # The UTC schedule is 22:30 in daily-market-valuation.yml.
+    return (created_at.astimezone(timezone.utc) - timedelta(hours=22, minutes=30)).date()
+
+
+def run_target_date(run: dict[str, Any]) -> str | None:
     created_at = run.get("createdAt")
     if not created_at:
         return None
@@ -57,6 +62,8 @@ def run_created_ny_date(run: dict[str, Any]) -> str | None:
         dt = datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
     except ValueError:
         return None
+    if run.get("event") == "schedule":
+        return scheduled_snapshot_date(dt).isoformat()
     return dt.astimezone(NY_TZ).date().isoformat()
 
 
@@ -79,7 +86,7 @@ def list_runs(repo: str, workflow: str, *, limit: int = 20) -> list[dict[str, An
 def find_today_run(runs: list[dict[str, Any]], *, ny_date: str, branch: str) -> dict[str, Any] | None:
     eligible = [
         run for run in runs
-        if run_created_ny_date(run) == ny_date
+        if run_target_date(run) == ny_date
         and run.get("headBranch") == branch
         and run.get("event") in {"workflow_dispatch", "schedule"}
     ]

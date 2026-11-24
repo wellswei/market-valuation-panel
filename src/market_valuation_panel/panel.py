@@ -6,7 +6,7 @@ import re
 import time
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 from typing import Any
@@ -194,7 +194,7 @@ def include_quote(market: str, item: dict[str, Any]) -> bool:
     return True
 
 
-def exchange_local_date(record: dict[str, Any], *, fallback_date: str) -> str:
+def exchange_local_date(record: dict[str, Any], *, fallback_date: str | None = None) -> str | None:
     timestamp = safe_number(record.get("regularMarketTime"))
     timezone_name = str(record.get("exchangeTimezoneName") or "").strip()
     if timestamp is None or not timezone_name:
@@ -443,7 +443,7 @@ def dataset_snapshot_rows(
     *,
     records: list[dict[str, Any]],
     valuation_rows: list[dict[str, Any]],
-    snapshot_date: str,
+    fallback_date: str | None,
     periods: int,
 ) -> tuple[list[str], list[dict[str, Any]]]:
     columns = dataset_columns(periods)
@@ -456,7 +456,7 @@ def dataset_snapshot_rows(
     for symbol in sorted(record_by_symbol):
         record = record_by_symbol[symbol]
         item = {column: record.get(column) for column in DATASET_BASE_COLUMNS}
-        item["date"] = exchange_local_date(record, fallback_date=snapshot_date)
+        item["date"] = exchange_local_date(record, fallback_date=fallback_date)
         symbol_rows = rows_by_symbol.get(symbol) or []
         dated_periods = sorted(
             {row["period_end"] for row in symbol_rows if row.get("period_end")},
@@ -486,10 +486,14 @@ def build_panel(
     max_per_market: int | None = DEFAULT_MAX_PER_MARKET,
     sleep_seconds: float = DEFAULT_SLEEP_SECONDS,
     periods: int = DEFAULT_PERIODS,
+    target_date: date | None = None,
 ) -> dict[str, Any]:
     started_at_datetime = datetime.now(timezone.utc)
     started_at = started_at_datetime.isoformat(timespec="seconds")
-    snapshot_date = started_at_datetime.astimezone(RUN_TIMEZONE).date().isoformat()
+    today = started_at_datetime.astimezone(RUN_TIMEZONE).date()
+    if target_date is not None and target_date > today:
+        raise ValueError("Panel target date cannot be in the future")
+    snapshot_date = (target_date or today).isoformat()
     industry_catalog, catalog_warnings = sector_industry_catalog()
 
     universe: list[dict[str, Any]] = []
@@ -524,7 +528,7 @@ def build_panel(
     dataset_header, unfiltered_dataset_records = dataset_snapshot_rows(
         records=records,
         valuation_rows=valuation_rows,
-        snapshot_date=snapshot_date,
+        fallback_date=snapshot_date if target_date is None else None,
         periods=periods,
     )
     dataset_records, stale_date_records = current_date_rows(
@@ -554,8 +558,8 @@ def build_panel(
                 "date is the exchange-local date derived from regularMarketTime when available; otherwise it falls back to the New York run date.",
                 "marketCap_current is the maintained market capitalization field; screener market cap is used only for sampling.",
                 "valuation_measures Current is Yahoo's provider trailing time-series value, not a same-close recomputation.",
-                "Only rows whose derived date equals the New York run date are written; stale quote dates are excluded.",
-                "Each daily CSV is one row per ticker; reruns replace only the current run date file.",
+                "Only rows matching the target date are written; explicit targets require a valid exchange-local quote date.",
+                "Each daily CSV is one row per ticker; explicit targets preserve existing rows for unavailable tickers.",
             ],
         },
         "classification": {
@@ -602,7 +606,9 @@ def dataset_sort_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str,
     )
 
 
-def write_outputs(output_dir: Path, payload: dict[str, Any]) -> OutputPaths:
+def write_outputs(
+    output_dir: Path, payload: dict[str, Any], *, preserve_existing: bool = False,
+) -> OutputPaths:
     paths = output_paths(output_dir, payload["date"])
     columns = payload["dataset"]["columns"]
     current_rows = payload["dataset"]["records"]
@@ -612,5 +618,13 @@ def write_outputs(output_dir: Path, payload: dict[str, Any]) -> OutputPaths:
         raise RuntimeError("No dataset rows were fetched from Yahoo; leaving daily files unchanged.")
     if any(row.get("date") != payload["date"] for row in current_rows):
         raise ValueError("Daily CSV rows must match the run date")
+    if preserve_existing and paths.daily_csv.exists():
+        with paths.daily_csv.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if reader.fieldnames != columns:
+                raise ValueError("Existing target partition has a different schema")
+            existing_rows = {(row["market"], row["symbol"]): row for row in reader}
+        existing_rows.update({(row["market"], row["symbol"]): row for row in current_rows})
+        current_rows = list(existing_rows.values())
     write_csv(paths.daily_csv, columns, sorted(current_rows, key=dataset_sort_key))
     return paths

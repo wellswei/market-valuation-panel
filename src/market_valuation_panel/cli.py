@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import date
 from pathlib import Path
 
 from .panel import (
@@ -20,8 +21,9 @@ def command_refresh(args: argparse.Namespace) -> None:
         max_per_market=max_per_market,
         sleep_seconds=args.sleep_seconds,
         periods=args.periods,
+        target_date=args.date,
     )
-    paths = write_outputs(args.output_dir, payload)
+    paths = write_outputs(args.output_dir, payload, preserve_existing=args.date is not None)
     no_current_date_rows = (
         len(payload["dataset"]["records"]) == 0
         and payload["dataset"]["excluded_stale_date_records"] > 0
@@ -52,7 +54,7 @@ def command_refresh(args: argparse.Namespace) -> None:
             "daily_csv": str(paths.daily_csv),
             "skipped_write": no_current_date_rows,
             "skip_reason": (
-                "no rows matched the New York run date"
+                "no rows matched the target quote date"
                 if no_current_date_rows else None
             ),
         },
@@ -88,6 +90,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=DEFAULT_PERIODS,
         help="Quarterly period columns after Current. Default: 5.",
+    )
+    refresh.add_argument(
+        "--date",
+        type=date.fromisoformat,
+        help="Target quote date (YYYY-MM-DD); explicit dates require verified quote timestamps.",
     )
     refresh.add_argument(
         "--output-dir",
