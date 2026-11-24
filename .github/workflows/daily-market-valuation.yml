@@ -52,15 +52,14 @@ jobs:
           DISPATCH_DATE: ${{ inputs.target_date }}
         run: |
           set -euo pipefail
-          created_at=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .created_at)
-          if [[ "$GITHUB_EVENT_NAME" == schedule ]]; then
-            target_date=$(python -c 'import sys; from datetime import datetime; from scripts.daily_refresh import scheduled_snapshot_date; print(scheduled_snapshot_date(datetime.fromisoformat(sys.argv[1])))' "$created_at")
-          else
-            target_date=${DISPATCH_DATE:-$(TZ=America/New_York date -d "$created_at" +%F)}
+          date_args=()
+          if [[ -n "$DISPATCH_DATE" ]]; then
+            date_args=(--date "$DISPATCH_DATE")
+          elif [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            created_at=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .created_at)
+            date_args=(--date "$(TZ=America/New_York date -d "$created_at" +%F)")
           fi
-          echo "Target quote date: $target_date"
-          market-valuation-panel refresh \
-            --date "$target_date" \
+          market-valuation-panel refresh "${date_args[@]}" \
             --max-per-market "$MAX_PER_MARKET" \
             --sleep-seconds "$SLEEP_SECONDS" \
             --output-dir data/market_valuation

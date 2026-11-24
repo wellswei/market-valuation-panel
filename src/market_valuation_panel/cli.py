@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import date
+import os
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from urllib.request import Request, urlopen
 
 from .panel import (
     DEFAULT_MAX_PER_MARKET,
@@ -14,16 +16,36 @@ from .panel import (
 )
 
 
+def scheduled_snapshot_date(created_at: datetime) -> date:
+    # The UTC schedule is 22:30 in daily-market-valuation.yml.
+    return (created_at.astimezone(timezone.utc) - timedelta(hours=22, minutes=30)).date()
+
+
+def scheduled_run_date() -> date | None:
+    if os.environ.get("GITHUB_EVENT_NAME") != "schedule":
+        return None
+    api = os.environ["GITHUB_API_URL"]
+    repo = os.environ["GITHUB_REPOSITORY"]
+    run_id = os.environ["GITHUB_RUN_ID"]
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "market-valuation-panel"}
+    if token := os.environ.get("GH_TOKEN"):
+        headers["Authorization"] = f"Bearer {token}"
+    with urlopen(Request(f"{api}/repos/{repo}/actions/runs/{run_id}", headers=headers), timeout=30) as response:
+        created_at = datetime.fromisoformat(json.load(response)["created_at"])
+    return scheduled_snapshot_date(created_at)
+
+
 def command_refresh(args: argparse.Namespace) -> None:
+    target_date = args.date or scheduled_run_date()
     max_per_market = None if args.max_per_market == 0 else args.max_per_market
     payload = build_panel(
         markets=tuple(args.market),
         max_per_market=max_per_market,
         sleep_seconds=args.sleep_seconds,
         periods=args.periods,
-        target_date=args.date,
+        target_date=target_date,
     )
-    paths = write_outputs(args.output_dir, payload, preserve_existing=args.date is not None)
+    paths = write_outputs(args.output_dir, payload, preserve_existing=target_date is not None)
     no_current_date_rows = (
         len(payload["dataset"]["records"]) == 0
         and payload["dataset"]["excluded_stale_date_records"] > 0

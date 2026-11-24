@@ -10,7 +10,7 @@ import sys
 import time
 from collections import Counter
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -49,11 +49,6 @@ def current_ny_date() -> str:
     return datetime.now(timezone.utc).astimezone(NY_TZ).date().isoformat()
 
 
-def scheduled_snapshot_date(created_at: datetime) -> date:
-    # The UTC schedule is 22:30 in daily-market-valuation.yml.
-    return (created_at.astimezone(timezone.utc) - timedelta(hours=22, minutes=30)).date()
-
-
 def run_target_date(run: dict[str, Any]) -> str | None:
     created_at = run.get("createdAt")
     if not created_at:
@@ -63,7 +58,7 @@ def run_target_date(run: dict[str, Any]) -> str | None:
     except ValueError:
         return None
     if run.get("event") == "schedule":
-        return scheduled_snapshot_date(dt).isoformat()
+        return (dt.astimezone(timezone.utc) - timedelta(hours=22, minutes=30)).date().isoformat()
     return dt.astimezone(NY_TZ).date().isoformat()
 
 
