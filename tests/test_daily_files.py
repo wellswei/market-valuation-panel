@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import re
 import subprocess
 import sys
 import tempfile
@@ -8,15 +9,40 @@ import unittest
 from datetime import datetime
 from pathlib import Path
 
+from market_valuation_panel.cli import scheduled_snapshot_date
 from market_valuation_panel.panel import current_date_rows, dataset_snapshot_rows, write_outputs
 
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from daily_refresh import find_today_run, validate_dataset, quality_is_ok  # noqa: E402
+from daily_refresh import find_today_run, run_target_date, validate_dataset, quality_is_ok  # noqa: E402
 
 
 class DailyFilesTest(unittest.TestCase):
+    def test_current_schedule_date_in_standard_and_daylight_time(self) -> None:
+        workflow = (ROOT / ".github/workflows/daily-market-valuation.yml").read_text()
+        cron = re.search(r'^\s*- cron: "([^"]+)"', workflow, re.MULTILINE)
+        self.assertIsNotNone(cron)
+        for created_at, expected in (
+            ("2026-11-25T21:36:59Z", "2026-11-24"),
+            ("2026-11-25T21:37:00Z", "2026-11-25"),
+            ("2026-11-26T06:12:21Z", "2026-11-25"),
+            ("2026-07-13T20:36:59Z", "2026-07-12"),
+            ("2026-07-13T20:37:00Z", "2026-07-13"),
+            ("2026-07-14T05:12:21Z", "2026-07-13"),
+        ):
+            with self.subTest(created_at=created_at):
+                run = {"event": "schedule", "createdAt": created_at}
+                self.assertEqual(run_target_date(run), expected)
+                self.assertEqual(
+                    scheduled_snapshot_date(datetime.fromisoformat(created_at), cron[1]).isoformat(),
+                    expected,
+                )
+
+    def test_legacy_schedule_rerun_still_uses_utc_slot(self) -> None:
+        created_at = datetime.fromisoformat("2026-11-24T21:45:00Z")
+        self.assertEqual(scheduled_snapshot_date(created_at, "30 22 * * *").isoformat(), "2026-11-23")
+
     def test_rerun_replaces_only_the_current_day(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory)
@@ -82,6 +108,13 @@ class DailyFilesTest(unittest.TestCase):
             write_outputs(output, payload("US"), preserve_existing=True)
             with paths.daily_csv.open(newline="") as handle:
                 self.assertEqual([row["market"] for row in csv.DictReader(handle)], ["CN", "US"])
+
+            before = paths.daily_csv.read_bytes()
+            stale = {"date": day, "dataset": {
+                "columns": columns, "records": [], "excluded_stale_date_records": 1,
+            }}
+            write_outputs(output, stale, preserve_existing=True)
+            self.assertEqual(paths.daily_csv.read_bytes(), before)
 
     def test_quality_checks_partition_dates(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

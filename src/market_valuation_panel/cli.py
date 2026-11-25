@@ -11,14 +11,22 @@ from .panel import (
     DEFAULT_MAX_PER_MARKET,
     DEFAULT_PERIODS,
     DEFAULT_SLEEP_SECONDS,
+    RUN_TIMEZONE,
     build_panel,
     write_outputs,
 )
 
 
-def scheduled_snapshot_date(created_at: datetime) -> date:
-    # The UTC schedule is 22:30 in daily-market-valuation.yml.
-    return (created_at.astimezone(timezone.utc) - timedelta(hours=22, minutes=30)).date()
+LEGACY_UTC_CRON = "30 22 * * *"
+
+
+def scheduled_snapshot_date(created_at: datetime, cron: str) -> date:
+    minute, hour, *day_fields = cron.split()
+    if day_fields != ["*", "*", "*"]:
+        raise ValueError(f"Expected a daily schedule, got {cron!r}")
+    schedule_timezone = timezone.utc if cron == LEGACY_UTC_CRON else RUN_TIMEZONE
+    local_time = created_at.astimezone(schedule_timezone)
+    return (local_time - timedelta(hours=int(hour), minutes=int(minute))).date()
 
 
 def scheduled_run_date() -> date | None:
@@ -32,7 +40,8 @@ def scheduled_run_date() -> date | None:
         headers["Authorization"] = f"Bearer {token}"
     with urlopen(Request(f"{api}/repos/{repo}/actions/runs/{run_id}", headers=headers), timeout=30) as response:
         created_at = datetime.fromisoformat(json.load(response)["created_at"])
-    return scheduled_snapshot_date(created_at)
+    # Reruns of the old workflow check out main without passing SCHEDULE_CRON.
+    return scheduled_snapshot_date(created_at, os.environ.get("SCHEDULE_CRON") or LEGACY_UTC_CRON)
 
 
 def command_refresh(args: argparse.Namespace) -> None:

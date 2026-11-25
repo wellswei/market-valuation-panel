@@ -2,8 +2,8 @@ name: Daily Market Valuation Panel
 
 on:
   schedule:
-    # 17:30 America/New_York on standard time. During EDT this is 18:30.
-    - cron: "30 22 * * *"
+    - cron: "37 16 * * *"
+      timezone: "America/New_York"
   workflow_dispatch:
     inputs:
       target_date:
@@ -50,6 +50,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           DISPATCH_DATE: ${{ inputs.target_date }}
+          SCHEDULE_CRON: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
           date_args=()
@@ -68,7 +69,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market_valuation
+          git add -- data/market_valuation/daily
+          if ! git diff --cached --quiet --no-renames --diff-filter=D -- data/market_valuation/daily; then
+            echo "::error::The valuation refresh tried to delete a daily partition."
+            exit 1
+          fi
           if git diff --cached --quiet; then
             echo "No valuation panel changes to commit."
           else

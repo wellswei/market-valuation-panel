@@ -17,6 +17,7 @@ from zoneinfo import ZoneInfo
 
 
 NY_TZ = ZoneInfo("America/New_York")
+SCHEDULE_OFFSET = timedelta(hours=16, minutes=37)
 DEFAULT_REPO = "wellswei/market-valuation-panel"
 DEFAULT_WORKFLOW = "daily-market-valuation.yml"
 DEFAULT_BRANCH = "main"
@@ -57,9 +58,10 @@ def run_target_date(run: dict[str, Any]) -> str | None:
         dt = datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
     except ValueError:
         return None
+    ny_time = dt.astimezone(NY_TZ)
     if run.get("event") == "schedule":
-        return (dt.astimezone(timezone.utc) - timedelta(hours=22, minutes=30)).date().isoformat()
-    return dt.astimezone(NY_TZ).date().isoformat()
+        ny_time -= SCHEDULE_OFFSET
+    return ny_time.date().isoformat()
 
 
 def list_runs(repo: str, workflow: str, *, limit: int = 20) -> list[dict[str, Any]]:

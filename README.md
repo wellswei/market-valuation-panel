@@ -66,12 +66,14 @@ rate limits may change upstream.
 ## GitHub Actions
 
 `.github/workflows/daily-market-valuation.yml` runs once a day on schedule and
-commits the run date's CSV back to the repository. The cron is `30 22 * * *`
-UTC, which is 17:30 New York time on standard time and 18:30 during daylight
-time. A delayed scheduled run targets the date of its UTC schedule slot, even
-if execution starts after New York midnight. Manual dispatch defaults to the
-New York dispatch date and accepts an explicit `target_date`. If the provider
-no longer has matching quotes, the workflow leaves existing files unchanged.
+commits the run date's CSV back to the repository. The cron is `37 16 * * *`
+in `America/New_York`, or 16:37 New York time year-round. A scheduled run
+uses the most recent schedule slot as of the original GitHub run creation
+time. This keeps the previous quote date when the run is created after
+midnight but before the next 16:37 slot, even on a later rerun. Manual dispatch
+defaults to the New York dispatch date and accepts an explicit `target_date`.
+Partial refreshes retain existing ticker rows. If the provider no longer has
+matching quotes, the workflow leaves existing files unchanged.
 
 The workflow uses full coverage by default (`MAX_PER_MARKET=0`) and a `0.2` second
 delay between ticker valuation requests. Scheduled runs use those defaults when
